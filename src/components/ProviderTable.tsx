@@ -150,7 +150,7 @@ export const ProviderTable = ({
           <tr>
             {columns.map(column => <th key={`filter-${column.id}`} className="px-6 py-2">
                 {isMultiselectColumn(column.accessor) ? <div className="relative filter-dropdown">
-                    <button onClick={() => setOpenDropdown(openDropdown === column.accessor ? null : column.accessor)} className="w-full p-1 text-sm border rounded text-left bg-white text-gray-500">
+                    <button onClick={() => setOpenDropdown(openDropdown === column.accessor ? null : column.accessor)} className="w-full p-1 text-sm border rounded text-left bg-white text-gray-400">
                       {filters[column.accessor]?.length > 0 ? `${filters[column.accessor].length} selected` : 'Filter...'}
                     </button>
                     {openDropdown === column.accessor && <div className="absolute z-10 mt-1 w-full bg-white border rounded-md shadow-lg max-h-48 overflow-auto">

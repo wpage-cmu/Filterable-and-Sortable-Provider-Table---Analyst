@@ -124,25 +124,17 @@ export function App() {
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <CAQHLogo className="w-10 h-10" />
-            <h1 className="text-2xl font-bold">Provider Data Portal</h1>
-          </div>
-          <div className="flex items-center space-x-2">
-            <button 
-              onClick={() => setShowDemo(!showDemo)}
-              className="bg-blue-800 p-2 rounded-full hover:bg-blue-700 transition-colors"
-            >
-              <span className="sr-only">Help</span>?
-            </button>
+            <h1 className="text-h1">Provider Data Portal</h1>
           </div>
         </div>
       </header>
       <main className="container mx-auto py-6 px-4">
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="mb-6">
-            <h2 className="text-2xl font-semibold text-gray-800">
+            <h2 className="text-h2">
               Provider Search Results
             </h2>
-            <p className="text-gray-500">
+            <p className="text-body2 text-gray-500">
               Generated today at {new Date().toLocaleTimeString()}
             </p>
           </div>
@@ -153,7 +145,7 @@ export function App() {
               <div className="flex justify-between items-start mb-3">
                 <div className="flex items-center space-x-2">
                   <Lightbulb className="w-5 h-5 text-blue-600" />
-                  <h3 className="font-semibold text-blue-800">How to Use Provider Search</h3>
+                  <h3 className="text-body1 font-semibold text-blue-800">How to Use Provider Search</h3>
                 </div>
                 <button 
                   onClick={() => setShowDemo(false)}
@@ -162,7 +154,7 @@ export function App() {
                   <X className="w-4 h-4" />
                 </button>
               </div>
-              <p className="text-blue-700 mb-3">
+              <p className="text-body2 text-blue-700 mb-3">
                 Ask any question about providers and get instant results. Try these examples:
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -170,7 +162,7 @@ export function App() {
                   <button
                     key={index}
                     onClick={() => handleDemoClick(question)}
-                    className="text-left p-2 bg-white border border-blue-300 rounded text-blue-700 hover:bg-blue-100 transition-colors"
+                    className="text-left p-2 bg-white border border-blue-300 rounded text-blue-700 hover:bg-blue-100 transition-colors text-body2"
                   >
                     "{question}"
                   </button>
@@ -182,7 +174,7 @@ export function App() {
           <div className="mb-4 flex flex-wrap justify-between items-center">
             <div className="flex space-x-4 mb-2 md:mb-0">
               <ColumnSelector columns={visibleColumns} toggleColumnVisibility={toggleColumnVisibility} />
-              <button onClick={() => setIsSqlModalOpen(true)} className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+              <button onClick={() => setIsSqlModalOpen(true)} className="flex items-center px-3 py-2 text-body2 font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
                 View SQL
               </button>
             </div>
@@ -200,7 +192,7 @@ export function App() {
               {!searchQuery && !showDemo && (
                 <button
                   onClick={() => setShowDemo(true)}
-                  className="absolute right-2 top-2 text-xs text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-1 rounded"
+                  className="absolute right-2 top-2 text-note text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-1 rounded"
                 >
                   Show examples
                 </button>
@@ -208,10 +200,10 @@ export function App() {
             </div>
           </div>
           {searchResult?.description && <div className="mb-4">
-              <p className="text-sm text-gray-600 mb-1">
+              <p className="text-body2 text-gray-600 mb-1">
                 {searchResult.description}
               </p>
-              {searchResult.response && <div className="text-sm text-blue-600">
+              {searchResult.response &&                 <div className="text-body2 text-blue-600">
                   {searchResult.response.split('\n').map((line, index) => {
               if (line.includes("'")) {
                 const suggestion = line.match(/'([^']+)'/)?.[1];
