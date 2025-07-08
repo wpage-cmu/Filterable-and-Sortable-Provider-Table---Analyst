@@ -15,6 +15,8 @@ export function App() {
   const [searchResult, setSearchResult] = useState(null);
   const [isSqlModalOpen, setIsSqlModalOpen] = useState(false);
   const [showDemo, setShowDemo] = useState(false);
+  // New state to track actual table filters
+  const [tableFilters, setTableFilters] = useState({});
 
   // Demo suggestions for users
   const demoQuestions = [
@@ -75,6 +77,7 @@ export function App() {
     isAlwaysVisible: false
   }];
   const [visibleColumns, setVisibleColumns] = useState(allColumns);
+  
   // Update column visibility based on search results and filters
   useEffect(() => {
     if (searchResult) {
@@ -84,28 +87,38 @@ export function App() {
       })));
     }
   }, [searchResult]);
+  
   const toggleColumnVisibility = columnId => {
     setVisibleColumns(visibleColumns.map(column => column.id === columnId ? {
       ...column,
       isVisible: !column.isVisible
     } : column));
   };
+  
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     const result = processNaturalLanguageSearch(query, data);
     setSearchResult(result);
   };
+  
   const handleDemoClick = (question: string) => {
     handleSearch(question);
     setShowDemo(false);
   };
+
+  // Callback function to receive filters from ProviderTable
+  const handleFiltersChange = (filters) => {
+    setTableFilters(filters);
+  };
+  
   const displayData = searchResult?.filteredData || data;
-  const currentSql = generateSql(searchQuery, displayData === data ? {} : {
-    attestationStatus: searchQuery
-  }, searchResult?.sort || {
+  
+  // Use the actual table filters for SQL generation
+  const currentSql = generateSql(searchQuery, tableFilters, searchResult?.sort || {
     key: null,
     direction: 'asc'
   });
+  
   return <div className="min-h-screen bg-gray-100">
       <header className="bg-blue-900 text-white p-4">
         <div className="container mx-auto flex justify-between items-center">
@@ -214,7 +227,12 @@ export function App() {
             })}
                 </div>}
             </div>}
-          <ProviderTable data={displayData} columns={visibleColumns.filter(col => col.isVisible)} initialSort={searchResult?.sort} />
+          <ProviderTable 
+            data={displayData} 
+            columns={visibleColumns.filter(col => col.isVisible)} 
+            initialSort={searchResult?.sort}
+            onFiltersChange={handleFiltersChange}
+          />
         </div>
       </main>
       <SqlModal isOpen={isSqlModalOpen} onClose={() => setIsSqlModalOpen(false)} sql={currentSql} />

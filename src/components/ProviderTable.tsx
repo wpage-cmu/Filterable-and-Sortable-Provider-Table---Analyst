@@ -3,7 +3,8 @@ import { ChevronUpIcon, ChevronDownIcon, CheckIcon } from 'lucide-react';
 export const ProviderTable = ({
   data,
   columns,
-  initialSort = null
+  initialSort = null,
+  onFiltersChange
 }) => {
   const [sortConfig, setSortConfig] = useState(initialSort || {
     key: null,
@@ -29,6 +30,14 @@ export const ProviderTable = ({
     });
     setFilters(initialFilters);
   }, []); // Empty dependency array since we only want this to run once
+  
+  // Notify parent component when filters change
+  useEffect(() => {
+    if (onFiltersChange) {
+      onFiltersChange(filters);
+    }
+  }, [filters, onFiltersChange]);
+  
   const [openDropdown, setOpenDropdown] = useState(null);
   // Get unique values for dropdown filters
   const getUniqueValues = columnId => {
