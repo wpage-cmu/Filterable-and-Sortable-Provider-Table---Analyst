@@ -8,6 +8,11 @@ import { SqlModal } from './components/SqlModal';
 import { generateSql } from './utils/sqlGenerator';
 import { MessageCircle, Lightbulb, X } from 'lucide-react';
 import { CAQHLogo } from './components/CAQHLogo';
+import { searchProvidersWithLLM } from './services/llmService';
+
+// Add this at the top of your App.tsx, right after the imports
+console.log('API Key loaded:', import.meta.env.VITE_CLAUDE_API_KEY ? 'Yes' : 'No');
+console.log('First few chars:', import.meta.env.VITE_CLAUDE_API_KEY?.substring(0, 10));
 
 export function App() {
   const [data] = useState(mockData);
@@ -18,6 +23,17 @@ export function App() {
   // New state to track actual table filters
   const [tableFilters, setTableFilters] = useState({});
 
+  // Add this temporary function inside your App component (after the useState declarations)
+  const testLLM = async () => {
+    console.log('Testing LLM with complex query...');
+    try {
+      const result = await searchProvidersWithLLM('show me urologists in california', data);
+      console.log('LLM Result:', result);
+    } catch (error) {
+      console.error('LLM Test failed:', error);
+    }
+  };
+  
   // Demo suggestions for users
   const demoQuestions = [
     "Which providers have recently attested?",
@@ -197,6 +213,9 @@ export function App() {
                   Show examples
                 </button>
               )}
+              <button onClick={testLLM} className="bg-red-500 text-white px-4 py-2 rounded ml-2">
+                Test LLM
+              </button>
             </div>
           </div>
           {searchResult?.description && <div className="mb-4">
