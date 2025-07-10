@@ -54,23 +54,23 @@ export const mockData = [{
   primaryPracticeState: 'PA',
   otherPracticeStates: ['OH', 'WV']
 }, {
-  firstName: 'Jessica',
+  firstName: 'Sophia',
   lastName: 'Garcia',
-  npi: '6789012345',
+  npi: '5678901234',
   attestationStatus: 'Active',
-  lastAttestationDate: '2023-03-10',
-  specialty: 'Psychiatry',
-  primaryPracticeState: 'AZ',
-  otherPracticeStates: ['NV', 'CA']
+  lastAttestationDate: '2024-03-10',
+  specialty: 'Ophthalmology',
+  primaryPracticeState: 'PA',
+  otherPracticeStates: []
 }, {
   firstName: 'Daniel',
   lastName: 'Miller',
   npi: '7890123456',
-  attestationStatus: 'Inactive',
-  lastAttestationDate: '2022-10-05',
+  attestationStatus: 'Active',
+  lastAttestationDate: '2024-10-05',
   specialty: 'Urologist',
-  primaryPracticeState: 'CA',
-  otherPracticeStates: ['NC', 'SC']
+  primaryPracticeState: 'PA',
+  otherPracticeStates: ['NV', 'CA']
 }, {
   firstName: 'Jennifer',
   lastName: 'Davis',

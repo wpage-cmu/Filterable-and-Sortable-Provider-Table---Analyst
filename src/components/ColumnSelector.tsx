@@ -56,7 +56,7 @@ export const ColumnSelector = ({
                 </span>
                 {column.isAlwaysVisible && (
                   <span className="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded-full">
-                    Required
+                    Default
                   </span>
                 )}
               </div>)}
