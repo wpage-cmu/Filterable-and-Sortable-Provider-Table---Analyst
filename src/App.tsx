@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { ProviderTable } from './components/ProviderTable';
 import { ColumnSelector } from './components/ColumnSelector';
+import { TableHeader } from './components/TableHeader';
 import { mockData } from './utils/data';
 import { processNaturalLanguageSearch } from './utils/searchProcessor';
 import { SqlModal } from './components/SqlModal';
-import { generateSql, hasActiveFilters } from './utils/sqlGenerator';
-import { MessageCircle, Lightbulb, X } from 'lucide-react';
+import { generateSql } from './utils/sqlGenerator';
+import { MessageCircle, Lightbulb, X, Bell, HelpCircle, Settings } from 'lucide-react';
 import { CAQHLogo } from './components/CAQHLogo';
 
 export function App() {
@@ -73,7 +74,6 @@ export function App() {
     isVisible: false,
     isAlwaysVisible: false
   }];
-  
   const [visibleColumns, setVisibleColumns] = useState(allColumns);
   
   // Update column visibility based on search results and filters
@@ -105,37 +105,40 @@ export function App() {
   };
   
   const displayData = searchResult?.filteredData || data;
+  const currentSql = generateSql(searchQuery, displayData === data ? {} : {
+    attestationStatus: searchQuery
+  }, searchResult?.sort || {
+    key: null,
+    direction: 'asc'
+  });
   
-  // For now, use simple logic for SQL button state - just check if there's a search query
-  const currentSql = generateSql(searchQuery, {}, searchResult?.sort || { key: null, direction: 'asc' });
-  const sqlButtonEnabled = hasActiveFilters(searchQuery, {}, searchResult?.sort || { key: null, direction: 'asc' });
-
   return <div className="min-h-screen bg-gray-100">
-      <header className="bg-blue-900 text-white p-4">
-        <div className="container mx-auto flex justify-between items-center">
-          <div className="flex items-center space-x-3">
-            <CAQHLogo className="w-10 h-10" />
-            <h1 className="text-2xl font-bold">Provider Data Portal</h1>
-          </div>
-          <div className="flex items-center space-x-2">
-            <button 
-              onClick={() => setShowDemo(!showDemo)}
-              className="bg-blue-800 p-2 rounded-full hover:bg-blue-700 transition-colors"
-            >
-              <span className="sr-only">Help</span>?
-            </button>
+      {/* Top Banner */}
+      <header className="w-full bg-white flex items-center px-10 h-16 border-b border-gray-200 sticky top-0 z-50">
+        <CAQHLogo className="w-auto h-8 mr-6" />
+        <div className="portal-title text-lg font-bold text-blue-900 mr-auto font-['Volte']">
+        </div>
+        <div className="flex items-center">
+
+          <div className="flex items-center gap-6">
+            <Bell className="w-5 h-5 text-gray-600 cursor-pointer hover:text-gray-800" />
+            <HelpCircle className="w-5 h-5 text-gray-600 cursor-pointer hover:text-gray-800" />
+            <Settings className="w-5 h-5 text-gray-600 cursor-pointer hover:text-gray-800" />
           </div>
         </div>
       </header>
+
       <main className="container mx-auto py-6 px-4">
         <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="mb-6">
-            <h2 className="text-2xl font-semibold text-gray-800">
-              Provider Search Results
-            </h2>
-            <p className="text-gray-500">
-              Generated today at {new Date().toLocaleTimeString()}
-            </p>
+          <div className="mb-6 flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-semibold text-gray-800">
+                Provider Search Results
+              </h2>
+              <p className="text-gray-500">
+                Generated today at {new Date().toLocaleTimeString()}
+              </p>
+            </div>
           </div>
 
           {/* Demo/Help Section */}
@@ -173,15 +176,7 @@ export function App() {
           <div className="mb-4 flex flex-wrap justify-between items-center">
             <div className="flex space-x-4 mb-2 md:mb-0">
               <ColumnSelector columns={visibleColumns} toggleColumnVisibility={toggleColumnVisibility} />
-              <button 
-                onClick={() => setIsSqlModalOpen(true)} 
-                disabled={!sqlButtonEnabled}
-                className={`flex items-center px-3 py-2 text-sm font-medium border border-gray-300 rounded-md transition-colors ${
-                  sqlButtonEnabled 
-                    ? 'text-gray-700 bg-white hover:bg-gray-50' 
-                    : 'text-gray-400 bg-gray-100 cursor-not-allowed'
-                }`}
-              >
+              <button onClick={() => setIsSqlModalOpen(true)} className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
                 View SQL
               </button>
             </div>
