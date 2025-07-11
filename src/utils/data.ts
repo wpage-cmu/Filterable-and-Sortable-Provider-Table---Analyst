@@ -58,7 +58,7 @@ export const mockData = [{
   lastName: 'Garcia',
   npi: '5678901234',
   attestationStatus: 'Active',
-  lastAttestationDate: '2024-03-10',
+  lastAttestationDate: '2025-07-10',
   specialty: 'Ophthalmology',
   primaryPracticeState: 'PA',
   otherPracticeStates: []
