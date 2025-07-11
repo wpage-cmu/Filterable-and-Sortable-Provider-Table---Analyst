@@ -3,10 +3,10 @@ import { ProviderTable } from './components/ProviderTable';
 import { ColumnSelector } from './components/ColumnSelector';
 import { TableHeader } from './components/TableHeader';
 import { mockData } from './utils/data';
-import { processNaturalLanguageSearch } from './utils/searchProcessor';
+import { searchProvidersWithLLM, generateSummaryWithLLM } from './services/llmService';
 import { SqlModal } from './components/SqlModal';
 import { generateSql } from './utils/sqlGenerator';
-import { MessageCircle, Lightbulb, X, Bell, HelpCircle, Settings } from 'lucide-react';
+import { MessageCircle, Lightbulb, X, Bell, HelpCircle, Settings, Loader2 } from 'lucide-react';
 import { CAQHLogo } from './components/CAQHLogo';
 
 export function App() {
@@ -15,13 +15,15 @@ export function App() {
   const [searchResult, setSearchResult] = useState(null);
   const [isSqlModalOpen, setIsSqlModalOpen] = useState(false);
   const [showDemo, setShowDemo] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState('');
 
   // Demo suggestions for users
   const demoQuestions = [
-    "Which providers have recently attested?",
-    "Show me providers in California",
-    "Find specialists by type",
-    "Who needs to update their attestation?"
+    "Show me providers in California with urologist specialty",
+    "How many providers have a last attestation date of over one year ago?",
+    "Which active providers recently attested?",
+    "Find all cardiologists in New York"
   ];
 
   // Modified allColumns to include isAlwaysVisible property
@@ -76,9 +78,9 @@ export function App() {
   }];
   const [visibleColumns, setVisibleColumns] = useState(allColumns);
   
-  // Update column visibility based on search results and filters
+  // Update column visibility based on search results
   useEffect(() => {
-    if (searchResult) {
+    if (searchResult && searchResult.relevantColumns) {
       setVisibleColumns(visibleColumns.map(column => ({
         ...column,
         isVisible: column.isAlwaysVisible || searchResult.relevantColumns?.includes(column.accessor) || false
@@ -93,21 +95,140 @@ export function App() {
     } : column));
   };
   
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    const result = processNaturalLanguageSearch(query, data);
-    setSearchResult(result);
+  const handleSearch = async (query: string) => {
+    setSearchError('');
+    
+    if (!query.trim()) {
+      setSearchResult(null);
+      return;
+    }
+
+    setIsSearching(true);
+    
+    try {
+      // Step 1: Get filters from LLM
+      const result = await searchProvidersWithLLM(query, data);
+      
+      // Step 2: Apply filters to get actual filtered data
+      const filteredData = applyFilters(data, result.filters);
+      
+      // Step 3: Generate natural summary with LLM using actual filtered data
+      const naturalSummary = await generateSummaryWithLLM(query, filteredData, data.length);
+      
+      setSearchResult({
+        ...result,
+        filteredData,
+        summary: naturalSummary
+      });
+    } catch (error) {
+      console.error('Search error:', error);
+      setSearchError('Failed to process your search. Please try again.');
+      setSearchResult(null);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // Generate accurate summary with real counts
+  const generateAccurateSummary = (query: string, filters: any, resultCount: number, totalCount: number): string => {
+    if (resultCount === totalCount) {
+      return `Showing all ${totalCount} providers`;
+    }
+
+    // Build description based on filters
+    const filterDescriptions: string[] = [];
+    
+    if (filters.specialty?.length) {
+      const specialties = filters.specialty.join(', ');
+      filterDescriptions.push(`${specialties.toLowerCase()}`);
+    }
+    
+    if (filters.attestationStatus?.length) {
+      const statuses = filters.attestationStatus.join(', ').toLowerCase();
+      filterDescriptions.push(`with ${statuses} status`);
+    }
+    
+    if (filters.primaryPracticeState?.length) {
+      const states = filters.primaryPracticeState.join(', ');
+      filterDescriptions.push(`in ${states}`);
+    }
+    
+    if (filters.lastAttestationDate) {
+      if (filters.lastAttestationDate.startsWith('<')) {
+        const date = filters.lastAttestationDate.substring(1);
+        filterDescriptions.push(`who last attested before ${date}`);
+      } else if (filters.lastAttestationDate.startsWith('>')) {
+        const date = filters.lastAttestationDate.substring(1);
+        filterDescriptions.push(`who attested after ${date}`);
+      }
+    }
+
+    let description = filterDescriptions.join(' ');
+    if (!description) {
+      description = 'matching your search';
+    }
+
+    const plural = resultCount === 1 ? 'provider' : 'providers';
+    return `Found ${resultCount} ${plural} ${description}`;
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch(searchQuery);
+    }
+  };
+  
+  // Helper function to apply filters to data
+  const applyFilters = (data, filters) => {
+    if (!filters || Object.keys(filters).length === 0) {
+      return data;
+    }
+    
+    return data.filter(item => {
+      return Object.entries(filters).every(([key, value]) => {
+        if (!value || (Array.isArray(value) && value.length === 0)) {
+          return true;
+        }
+        
+        // Handle date range filters
+        if (key === 'lastAttestationDate' && typeof value === 'string') {
+          const itemDate = new Date(item[key]);
+          if (value.startsWith('<')) {
+            const compareDate = new Date(value.substring(1));
+            return itemDate < compareDate;
+          } else if (value.startsWith('>')) {
+            const compareDate = new Date(value.substring(1));
+            return itemDate > compareDate;
+          }
+          return item[key] === value;
+        }
+        
+        if (Array.isArray(value)) {
+          // Handle array filters
+          if (key === 'otherPracticeStates' && Array.isArray(item[key])) {
+            return item[key].some(state => value.includes(state));
+          }
+          return value.includes(item[key]);
+        }
+        
+        if (typeof value === 'string') {
+          // Handle string filters (like names, NPI)
+          return item[key]?.toString().toLowerCase().includes(value.toLowerCase());
+        }
+        
+        return item[key] === value;
+      });
+    });
   };
   
   const handleDemoClick = (question: string) => {
+    setSearchQuery(question);
     handleSearch(question);
     setShowDemo(false);
   };
   
   const displayData = searchResult?.filteredData || data;
-  const currentSql = generateSql(searchQuery, displayData === data ? {} : {
-    attestationStatus: searchQuery
-  }, searchResult?.sort || {
+  const currentSql = generateSql(searchQuery, searchResult?.filters || {}, {
     key: null,
     direction: 'asc'
   });
@@ -176,13 +297,19 @@ export function App() {
             <div className="relative flex-1 max-w-3xl mr-4">
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
-                  <MessageCircle className="absolute left-3 top-2.5 w-5 h-5 text-blue-500" />
+                  {isSearching ? (
+                    <Loader2 className="absolute left-3 top-2.5 w-5 h-5 text-blue-500 animate-spin" />
+                  ) : (
+                    <MessageCircle className="absolute left-3 top-2.5 w-5 h-5 text-blue-500" />
+                  )}
                   <input 
                     type="text" 
-                    placeholder="Ask any question about providers - I'm here to help with your provider search!" 
+                    placeholder="Ask any question about providers - press Enter to search!" 
                     className="w-full pl-10 pr-4 py-2 border-2 border-blue-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all" 
                     value={searchQuery} 
-                    onChange={e => handleSearch(e.target.value)} 
+                    onChange={e => setSearchQuery(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    disabled={isSearching}
                   />
                 </div>
                 {!searchQuery && !showDemo && (
@@ -202,27 +329,36 @@ export function App() {
               </button>
             </div>
           </div>
-          {searchResult?.description && <div className="mb-4">
-              <p className="text-sm text-gray-600 mb-1">
-                {searchResult.description}
-              </p>
-              {searchResult.response && <div className="text-sm text-blue-600">
-                  {searchResult.response.split('\n').map((line, index) => {
-              if (line.includes("'")) {
-                const suggestion = line.match(/'([^']+)'/)?.[1];
-                return suggestion ? <button key={index} onClick={() => handleSearch(suggestion)} className="block text-left hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-1 -ml-1">
-                          {line}
-                        </button> : <p key={index} className="italic">
-                          {line}
-                        </p>;
-              }
-              return <p key={index} className="italic">
-                        {line}
-                      </p>;
-            })}
-                </div>}
-            </div>}
-          <ProviderTable data={displayData} columns={visibleColumns.filter(col => col.isVisible)} initialSort={searchResult?.sort} />
+
+          {/* Error Display */}
+          {searchError && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-700 text-sm">{searchError}</p>
+            </div>
+          )}
+
+          {/* Search Results Summary */}
+          {searchResult?.summary && (
+            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-start space-x-2">
+                <MessageCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-green-800 font-medium">{searchResult.summary}</p>
+                  {displayData.length !== data.length && (
+                    <p className="text-green-700 text-sm mt-1">
+                      Showing {displayData.length} of {data.length} total providers
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <ProviderTable 
+            data={displayData} 
+            columns={visibleColumns.filter(col => col.isVisible)} 
+            initialSort={null}
+          />
         </div>
       </main>
       <SqlModal isOpen={isSqlModalOpen} onClose={() => setIsSqlModalOpen(false)} sql={currentSql} />
