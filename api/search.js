@@ -4,10 +4,9 @@ const anthropic = new Anthropic({
   apiKey: process.env.CLAUDE_API_KEY,
 });
 
-// Add at the top of both files
 export const config = {
-    runtime: 'nodejs18.x',
-    maxDuration: 30, // Increase timeout for LLM calls
+    runtime: 'nodejs',
+    maxDuration: 30,
   };
   
   // Rest of your existing code...
