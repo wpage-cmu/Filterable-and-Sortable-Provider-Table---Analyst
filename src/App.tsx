@@ -119,7 +119,6 @@ export function App() {
         <div className="portal-title text-lg font-bold text-blue-900 mr-auto font-['Volte']">
         </div>
         <div className="flex items-center">
-
           <div className="flex items-center gap-6">
             <Bell className="w-5 h-5 text-gray-600 cursor-pointer hover:text-gray-800" />
             <HelpCircle className="w-5 h-5 text-gray-600 cursor-pointer hover:text-gray-800" />
@@ -136,7 +135,7 @@ export function App() {
                 Provider Search Results
               </h2>
               <p className="text-gray-500">
-                Generated today at {new Date().toLocaleTimeString()}
+                Data refreshed today at {new Date().toLocaleTimeString()}
               </p>
             </div>
           </div>
@@ -174,31 +173,33 @@ export function App() {
           )}
 
           <div className="mb-4 flex flex-wrap justify-between items-center">
+            <div className="relative flex-1 max-w-3xl mr-4">
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <MessageCircle className="absolute left-3 top-2.5 w-5 h-5 text-blue-500" />
+                  <input 
+                    type="text" 
+                    placeholder="Ask any question about providers - I'm here to help with your provider search!" 
+                    className="w-full pl-10 pr-4 py-2 border-2 border-blue-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all" 
+                    value={searchQuery} 
+                    onChange={e => handleSearch(e.target.value)} 
+                  />
+                </div>
+                {!searchQuery && !showDemo && (
+                  <button
+                    onClick={() => setShowDemo(true)}
+                    className="text-xs text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-1 rounded whitespace-nowrap"
+                  >
+                    Show examples
+                  </button>
+                )}
+              </div>
+            </div>
             <div className="flex space-x-4 mb-2 md:mb-0">
               <ColumnSelector columns={visibleColumns} toggleColumnVisibility={toggleColumnVisibility} />
               <button onClick={() => setIsSqlModalOpen(true)} className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
                 View SQL
               </button>
-            </div>
-            <div className="relative flex-1 max-w-xl ml-4">
-              <div className="relative">
-                <MessageCircle className="absolute left-3 top-2.5 w-5 h-5 text-blue-500" />
-                <input 
-                  type="text" 
-                  placeholder="Ask any question about providers - I'm here to help with your provider search..." 
-                  className="w-full pl-10 pr-4 py-2 border-2 border-blue-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all" 
-                  value={searchQuery} 
-                  onChange={e => handleSearch(e.target.value)} 
-                />
-              </div>
-              {!searchQuery && !showDemo && (
-                <button
-                  onClick={() => setShowDemo(true)}
-                  className="absolute right-2 top-2 text-xs text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-1 rounded"
-                >
-                  Show examples
-                </button>
-              )}
             </div>
           </div>
           {searchResult?.description && <div className="mb-4">
