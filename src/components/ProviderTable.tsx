@@ -45,7 +45,7 @@ export const ProviderTable = ({
   };
   // Check if column should use multiselect
   const isMultiselectColumn = columnId => {
-    return ['attestationStatus', 'specialty', 'primaryPracticeState', 'otherPracticeStates'].includes(columnId);
+    return ['attestationStatus', 'specialty', 'primaryPracticeState', 'otherPracticeStates', 'acceptingPatientStatus'].includes(columnId);
   };
   // Apply filters to data
   const filteredData = data.filter(item => {
@@ -112,17 +112,52 @@ export const ProviderTable = ({
   const getStatusBadgeClass = status => {
     switch (status) {
       case 'Active':
-        return 'bg-green-100 text-green-800';
+        return 'status-active';
       case 'Inactive':
-        return 'bg-red-100 text-red-800';
+        return 'status-inactive';
       case 'Pending':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'status-pending';
       case 'Expired':
-        return 'bg-gray-100 text-gray-800';
+        return 'status-expired';
       default:
-        return 'bg-blue-100 text-blue-800';
+        return 'status-default';
     }
   };
+
+  const getAcceptingPatientsBadgeClass = status => {
+    switch (status) {
+      case 'Yes':
+        return 'status-active';
+      case 'No':
+        return 'status-inactive';
+      case 'Limited':
+        return 'status-pending';
+      default:
+        return 'status-default';
+    }
+  };
+  // Handle row click to redirect to Figma prototype
+  const handleRowClick = () => {
+    // Open in full screen mode with maximized window
+    const newWindow = window.open(
+      'https://www.figma.com/proto/TeN9UnvECKHgym7vRT91Jo/Final-CAQH-PSV-Prototype?node-id=0-6&p=f&t=4IyqYz4va6VHvv4r-1&scaling=scale-down-width&content-scaling=fixed&page-id=0%3A1',
+      '_blank',
+      'fullscreen=yes,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no'
+    );
+    
+    // Try to maximize the window if fullscreen isn't supported
+    if (newWindow) {
+      newWindow.focus();
+      // Attempt to maximize on browsers that support it
+      try {
+        newWindow.moveTo(0, 0);
+        newWindow.resizeTo(screen.width, screen.height);
+      } catch (e) {
+        // Silently fail if browser doesn't allow window manipulation
+      }
+    }
+  };
+
   // Add click outside handler with specific target checking
   useEffect(() => {
     const handleClickOutside = event => {
@@ -134,68 +169,70 @@ export const ProviderTable = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [openDropdown]);
-  return <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+  return <div className="updates-table-wrapper">
+      <table className="updates-table">
+        <thead>
           <tr>
-            {columns.map(column => <th key={column.id} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => requestSort(column.accessor)}>
-                <div className="flex items-center space-x-1">
+            {columns.map(column => <th key={column.id} className="sortable" onClick={() => requestSort(column.accessor)}>
+                <div className="th-content">
                   <span>{column.Header}</span>
-                  <span className="flex flex-col">
-                    {sortConfig.key === column.accessor ? sortConfig.direction === 'asc' ? <ChevronUpIcon className="h-4 w-4" /> : <ChevronDownIcon className="h-4 w-4" /> : <span className="h-4 w-4"></span>}
+                  <span className="sort-icon-container">
+                    {sortConfig.key === column.accessor ? sortConfig.direction === 'asc' ? <ChevronUpIcon className="sort-icon" /> : <ChevronDownIcon className="sort-icon" /> : <div className="sort-icon-placeholder"></div>}
                   </span>
                 </div>
               </th>)}
           </tr>
-          <tr>
-            {columns.map(column => <th key={`filter-${column.id}`} className="px-6 py-2">
-                {isMultiselectColumn(column.accessor) ? <div className="relative filter-dropdown">
-                    <button onClick={() => setOpenDropdown(openDropdown === column.accessor ? null : column.accessor)} className="w-full p-1 text-sm border rounded text-left bg-white text-gray-400">
+          <tr className="filter-row">
+            {columns.map(column => <th key={`filter-${column.id}`} className="filter-cell">
+                {isMultiselectColumn(column.accessor) ? <div className="filter-dropdown">
+                    <button onClick={() => setOpenDropdown(openDropdown === column.accessor ? null : column.accessor)} className="filter-btn">
                       {filters[column.accessor]?.length > 0 ? `${filters[column.accessor].length} selected` : 'Filter...'}
                     </button>
-                    {openDropdown === column.accessor && <div className="absolute z-10 mt-1 w-full bg-white border rounded-md shadow-lg max-h-48 overflow-auto">
-                        {getUniqueValues(column.accessor).map(value => <div key={value} className="flex items-center px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer" onClick={e => {
+                    {openDropdown === column.accessor && <div className="filter-popup active">
+                        {getUniqueValues(column.accessor).map(value => <div key={value} className="filter-option" onClick={e => {
                   e.stopPropagation();
                   handleFilterChange(column.accessor, value);
                 }}>
-                            <input type="checkbox" className="mr-2" checked={filters[column.accessor]?.includes(value) || false} onChange={() => {}} />
+                            <input type="checkbox" checked={filters[column.accessor]?.includes(value) || false} onChange={() => {}} />
                             {value}
                           </div>)}
                       </div>}
-                  </div> : <input type="text" placeholder="Filter..." className="w-full p-1 text-sm border rounded" value={filters[column.accessor] || ''} onChange={e => handleFilterChange(column.accessor, e.target.value)} />}
+                  </div> : <input type="text" placeholder="Filter..." className="search-input" value={filters[column.accessor] || ''} onChange={e => handleFilterChange(column.accessor, e.target.value)} />}
               </th>)}
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {paginatedData.length > 0 ? paginatedData.map((row, rowIndex) => <tr key={rowIndex} className="hover:bg-gray-50">
-                {columns.map(column => <td key={`${rowIndex}-${column.id}`} className="px-6 py-4 whitespace-nowrap">
-                    {column.accessor === 'attestationStatus' ? <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(row[column.accessor])}`}>
+        <tbody>
+          {paginatedData.length > 0 ? paginatedData.map((row, rowIndex) => <tr key={rowIndex} className="clickable-row" onClick={handleRowClick}>
+                {columns.map(column => <td key={`${rowIndex}-${column.id}`}>
+                    {column.accessor === 'attestationStatus' ? <span className={`status-badge ${getStatusBadgeClass(row[column.accessor])}`}>
                         {row[column.accessor]}
-                      </span> : column.accessor === 'otherPracticeStates' ? <span>{row[column.accessor].join(', ')}</span> : row[column.accessor]}
+                      </span> : column.accessor === 'acceptingPatientStatus' ? <span className={`status-badge ${getAcceptingPatientsBadgeClass(row[column.accessor])}`}>
+                        {row[column.accessor]}
+                      </span> : column.accessor === 'otherPracticeStates' ? <span>{row[column.accessor].join(', ')}</span> : column.accessor === 'primaryWorkAddress' ? <span className="address-text">{row[column.accessor]}</span> : row[column.accessor]}
                   </td>)}
               </tr>) : <tr>
-              <td colSpan={columns.length} className="px-6 py-4 text-center text-gray-500">
+              <td colSpan={columns.length} className="no-results">
                 No results found
               </td>
             </tr>}
         </tbody>
       </table>
-      <div className="py-3 flex items-center justify-between border-t border-gray-200 bg-white px-4">
-        <div className="flex items-center">
-          <p className="text-sm text-gray-700">
+      <div className="table-pagination">
+        <div className="pagination-info">
+          <p>
             Showing{' '}
-            <span className="font-medium">
+            <span className="pagination-numbers">
               {Math.min((currentPage - 1) * rowsPerPage + 1, sortedData.length)}
             </span>{' '}
             -{' '}
-            <span className="font-medium">
+            <span className="pagination-numbers">
               {Math.min(currentPage * rowsPerPage, sortedData.length)}
             </span>{' '}
-            of <span className="font-medium">{sortedData.length}</span> results
+            of <span className="pagination-numbers">{sortedData.length}</span> results
           </p>
         </div>
-        <div className="flex items-center space-x-2">
-          <select className="border rounded-md p-1 text-sm" value={rowsPerPage} onChange={e => {
+        <div className="pagination-controls">
+          <select className="pagination-select" value={rowsPerPage} onChange={e => {
           setRowsPerPage(Number(e.target.value));
           setCurrentPage(1);
         }}>
@@ -203,14 +240,14 @@ export const ProviderTable = ({
                 {pageSize} per page
               </option>)}
           </select>
-          <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-            <button onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} disabled={currentPage === 1} className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${currentPage === 1 ? 'text-gray-300' : 'text-gray-500 hover:bg-gray-50'}`}>
+          <div className="pagination-buttons">
+            <button onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} disabled={currentPage === 1} className={`pagination-btn ${currentPage === 1 ? 'disabled' : ''}`}>
               &lt;
             </button>
-            <button onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages} className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${currentPage === totalPages ? 'text-gray-300' : 'text-gray-500 hover:bg-gray-50'}`}>
+            <button onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages} className={`pagination-btn ${currentPage === totalPages ? 'disabled' : ''}`}>
               &gt;
             </button>
-          </nav>
+          </div>
         </div>
       </div>
     </div>;

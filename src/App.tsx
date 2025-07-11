@@ -6,8 +6,9 @@ import { mockData } from './utils/data';
 import { searchProvidersWithLLM, generateSummaryWithLLM } from './services/llmService';
 import { SqlModal } from './components/SqlModal';
 import { generateSql } from './utils/sqlGenerator';
-import { MessageCircle, Lightbulb, X, Bell, HelpCircle, Settings, Loader2 } from 'lucide-react';
+import { Lightbulb, X, Bell, HelpCircle, Settings, Loader2 } from 'lucide-react';
 import { CAQHLogo } from './components/CAQHLogo';
+import sparklesIcon from './assets/planefinder_whatsnew_sparkles_icon.png';
 
 export function App() {
   const [data] = useState(mockData);
@@ -26,8 +27,14 @@ export function App() {
     "Find all cardiologists in New York"
   ];
 
-  // Modified allColumns to include isAlwaysVisible property
+  // Modified allColumns with new order and new columns
   const allColumns = [{
+    id: 'npi',
+    Header: 'NPI',
+    accessor: 'npi',
+    isVisible: true,
+    isAlwaysVisible: true
+  }, {
     id: 'firstName',
     Header: 'Provider First Name',
     accessor: 'firstName',
@@ -40,15 +47,15 @@ export function App() {
     isVisible: true,
     isAlwaysVisible: true
   }, {
-    id: 'npi',
-    Header: 'NPI',
-    accessor: 'npi',
-    isVisible: true,
-    isAlwaysVisible: true
-  }, {
     id: 'attestationStatus',
     Header: 'Attestation Status',
     accessor: 'attestationStatus',
+    isVisible: false,
+    isAlwaysVisible: false
+  }, {
+    id: 'attestationDueDate',
+    Header: 'Attestation Due Date',
+    accessor: 'attestationDueDate',
     isVisible: false,
     isAlwaysVisible: false
   }, {
@@ -61,6 +68,18 @@ export function App() {
     id: 'specialty',
     Header: 'Specialty',
     accessor: 'specialty',
+    isVisible: false,
+    isAlwaysVisible: false
+  }, {
+    id: 'acceptingPatientStatus',
+    Header: 'Accepting Patient Status',
+    accessor: 'acceptingPatientStatus',
+    isVisible: false,
+    isAlwaysVisible: false
+  }, {
+    id: 'primaryWorkAddress',
+    Header: 'Primary Work Address',
+    accessor: 'primaryWorkAddress',
     isVisible: false,
     isAlwaysVisible: false
   }, {
@@ -300,11 +319,11 @@ export function App() {
                   {isSearching ? (
                     <Loader2 className="absolute left-3 top-2.5 w-5 h-5 text-blue-500 animate-spin" />
                   ) : (
-                    <MessageCircle className="absolute left-3 top-2.5 w-5 h-5 text-blue-500" />
+                    <img src={sparklesIcon} alt="Search" className="absolute left-3 top-2.5 w-5 h-5" />
                   )}
                   <input 
                     type="text" 
-                    placeholder="Ask any question about providers - press Enter to search!" 
+                    placeholder="Ask any question about providers - press 'Enter' to search!" 
                     className="w-full pl-10 pr-4 py-2 border-2 border-blue-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all" 
                     value={searchQuery} 
                     onChange={e => setSearchQuery(e.target.value)}
@@ -341,7 +360,7 @@ export function App() {
           {searchResult?.summary && (
             <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
               <div className="flex items-start space-x-2">
-                <MessageCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                <img src={sparklesIcon} alt="Search result" className="w-5 h-5 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-green-800 font-medium">{searchResult.summary}</p>
                   {displayData.length !== data.length && (

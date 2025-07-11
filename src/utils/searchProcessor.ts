@@ -76,6 +76,33 @@ const searchPatterns: SearchPattern[] = [{
   response: "Here are the pending attestations. Try asking:\n- 'Show pending attestations by date'\n- 'Which states have pending providers?'\n- 'Show pending providers by specialty'",
   relevantColumns: ['attestationStatus']
 }, {
+  patterns: ['accepting patients', 'accepting new patients', 'taking patients', 'patient status', 'accepting status'],
+  filter: provider => provider.acceptingPatientStatus === 'Yes',
+  description: 'Providers accepting new patients',
+  response: "Here are providers currently accepting new patients. You can also ask:\n- 'Show providers with limited patient acceptance'\n- 'Which specialties are accepting patients?'\n- 'Show accepting providers by location'",
+  relevantColumns: ['acceptingPatientStatus', 'specialty', 'primaryPracticeState']
+}, {
+  patterns: ['not accepting', 'not taking patients', 'closed to patients'],
+  filter: provider => provider.acceptingPatientStatus === 'No',
+  description: 'Providers not accepting new patients',
+  response: "These providers are currently not accepting new patients. Try asking:\n- 'Show providers accepting patients'\n- 'Which providers have limited acceptance?'",
+  relevantColumns: ['acceptingPatientStatus']
+}, {
+  patterns: ['due date', 'attestation due', 'when due', 'expiring soon'],
+  filter: provider => {
+    const dueDate = new Date(provider.attestationDueDate);
+    const thirtyDaysFromNow = new Date();
+    thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+    return dueDate <= thirtyDaysFromNow;
+  },
+  sort: {
+    key: 'attestationDueDate',
+    direction: 'asc'
+  },
+  description: 'Providers with attestations due soon (within 30 days)',
+  response: "Here are providers with attestations due within 30 days. You might want to:\n- 'Show all due dates'\n- 'Find overdue attestations'\n- 'Show due dates by specialty'",
+  relevantColumns: ['attestationDueDate', 'attestationStatus', 'specialty']
+}, {
   patterns: ['specialty', 'specialties', 'specialized'],
   filter: () => true,
   sort: {
@@ -86,11 +113,11 @@ const searchPatterns: SearchPattern[] = [{
   response: "I can help you find providers by specialty. Try asking about specific specialties like 'Show me cardiologists'.",
   relevantColumns: ['specialty']
 }, {
-  patterns: ['state', 'location', 'practice in'],
+  patterns: ['state', 'location', 'practice in', 'address'],
   filter: () => true,
   description: 'Providers by location',
-  response: 'I can help you find providers by state. You can ask about specific states or see all practice locations.',
-  relevantColumns: ['primaryPracticeState', 'otherPracticeStates']
+  response: 'I can help you find providers by state or address. You can ask about specific states or see all practice locations.',
+  relevantColumns: ['primaryPracticeState', 'otherPracticeStates', 'primaryWorkAddress']
 }];
 // Helper function to convert state names to codes (simplified version)
 const stateMap = {

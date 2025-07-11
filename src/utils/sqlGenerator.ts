@@ -4,8 +4,11 @@ const columnMapping = {
   lastName: 'last_name',
   npi: 'npi',
   attestationStatus: 'attestation_status',
+  attestationDueDate: 'attestation_due_date',
   lastAttestationDate: 'last_attestation_date',
   specialty: 'specialty',
+  acceptingPatientStatus: 'accepting_patient_status',
+  primaryWorkAddress: 'primary_work_address',
   primaryPracticeState: 'primary_practice_state',
   otherPracticeStates: 'other_practice_states'
 };
@@ -24,7 +27,7 @@ export const generateSql = (
   
   // Add search conditions
   if (searchQuery && searchQuery.trim()) {
-    conditions.push(`(\n    first_name LIKE '%${searchQuery.trim()}%'\n    OR last_name LIKE '%${searchQuery.trim()}%'\n    OR specialty LIKE '%${searchQuery.trim()}%'\n  )`);
+    conditions.push(`(\n    first_name LIKE '%${searchQuery.trim()}%'\n    OR last_name LIKE '%${searchQuery.trim()}%'\n    OR specialty LIKE '%${searchQuery.trim()}%'\n    OR primary_work_address LIKE '%${searchQuery.trim()}%'\n  )`);
   }
   
   // Add filters

@@ -11,5 +11,335 @@
 @layer base {
   body {
     font-family: 'Lato', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+    color: #2F3E5B;
+    background: #f8f9fb;
   }
+}
+
+/* Updates table styling to match CAQH design */
+.updates-table-wrapper {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(47,62,91,0.04);
+  overflow: hidden;
+}
+
+.updates-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-bottom: 0;
+  font-family: 'Lato', sans-serif;
+}
+
+.updates-table thead tr {
+  background: #EAF4FB;
+  border-radius: 12px 12px 0 0;
+}
+
+.updates-table thead tr th:first-child {
+  border-top-left-radius: 12px;
+}
+
+.updates-table thead tr th:last-child {
+  border-top-right-radius: 12px;
+}
+
+.updates-table th {
+  padding: 16px 12px;
+  text-align: left;
+  font-size: 14px;
+  color: #14386B;
+  font-weight: 900;
+  background: #EAF4FB;
+  border-bottom: 1px solid #e3e7ef;
+  cursor: pointer;
+  user-select: none;
+  vertical-align: middle;
+}
+
+.updates-table th.sortable:hover {
+  color: #2F3E5B;
+}
+
+.updates-table .th-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 24px;
+  height: 100%;
+}
+
+.updates-table .sort-icon-container {
+  display: flex;
+  align-items: center;
+  margin-left: 4px;
+}
+
+.updates-table .sort-icon {
+  width: 14px;
+  height: 14px;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.updates-table .sort-icon-placeholder {
+  width: 14px;
+  height: 14px;
+}
+
+.updates-table .filter-row th {
+  padding: 8px 12px;
+  background: #f8f9fb;
+  border-bottom: 1px solid #e3e7ef;
+}
+
+.updates-table .filter-cell {
+  position: relative;
+}
+
+.updates-table .filter-btn {
+  background: #fff;
+  border: 1px solid #bfc8db;
+  color: #2F3E5B;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, border 0.15s;
+  width: 100%;
+  text-align: left;
+}
+
+.updates-table .filter-btn:hover {
+  background: #EAF4FB;
+}
+
+.updates-table .search-input {
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid #bfc8db;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #2F3E5B;
+  background: #fff;
+}
+
+.updates-table .filter-dropdown {
+  position: relative;
+}
+
+.updates-table .filter-popup {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #fff;
+  border: 1px solid #e3e7ef;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(47,62,91,0.08);
+  padding: 12px;
+  min-width: 200px;
+  margin-top: 4px;
+  z-index: 200;
+  display: none;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.updates-table .filter-popup.active {
+  display: block;
+}
+
+.updates-table .filter-option {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  padding: 2px;
+}
+
+.updates-table .filter-option:hover {
+  background: #f8f9fb;
+  border-radius: 4px;
+}
+
+.updates-table .filter-option input[type="checkbox"] {
+  margin-right: 8px;
+  width: 14px;
+  height: 14px;
+  accent-color: #2F3E5B;
+}
+
+.updates-table tbody tr {
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(47,62,91,0.03);
+  transition: box-shadow 0.15s;
+}
+
+.updates-table tbody tr:hover {
+  box-shadow: 0 2px 8px rgba(47,62,91,0.08);
+}
+
+.updates-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.updates-table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 12px;
+}
+
+.updates-table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 12px;
+}
+
+.updates-table td {
+  padding: 16px 12px;
+  text-align: left;
+  font-size: 14px;
+  border-bottom: 1px solid #e3e7ef;
+  vertical-align: top;
+  color: #2F3E5B;
+}
+
+.updates-table .no-results {
+  text-align: center;
+  color: #8a97b1;
+  font-style: italic;
+  padding: 32px;
+}
+
+/* Status badges */
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  display: inline-block;
+}
+
+.status-active {
+  background: #E8F5E8;
+  color: #217A2B;
+}
+
+.status-inactive {
+  background: #FFE8E8;
+  color: #D32F2F;
+}
+
+.status-pending {
+  background: #FFF8E1;
+  color: #F57C00;
+}
+
+.status-expired {
+  background: #F5F5F5;
+  color: #666;
+}
+
+.status-default {
+  background: #EAF4FB;
+  color: #14386B;
+}
+
+/* Clickable row styling */
+.updates-table .clickable-row {
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.updates-table .clickable-row:hover {
+  background-color: #f8f9fb !important;
+  box-shadow: 0 4px 12px rgba(47,62,91,0.12) !important;
+  transform: translateY(-1px);
+}
+
+.updates-table .clickable-row:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(47,62,91,0.08) !important;
+}
+
+/* Address text styling */
+.address-text {
+  font-size: 14px;
+  line-height: 1.4;
+  color: #2F3E5B;
+}
+
+/* Table pagination */
+.table-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 12px;
+  background: #fff;
+  border-top: 1px solid #e3e7ef;
+  font-family: 'Lato', sans-serif;
+}
+
+.pagination-info p {
+  font-size: 14px;
+  color: #2F3E5B;
+  margin: 0;
+}
+
+.pagination-numbers {
+  font-weight: 700;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pagination-select {
+  background: #fff;
+  border: 1px solid #bfc8db;
+  color: #2F3E5B;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.pagination-buttons {
+  display: flex;
+  gap: 2px;
+}
+
+.pagination-btn {
+  background: #fff;
+  border: 1px solid #bfc8db;
+  color: #2F3E5B;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+
+.pagination-btn:hover:not(.disabled) {
+  background: #EAF4FB;
+}
+
+.pagination-btn.disabled {
+  color: #bfc8db;
+  cursor: not-allowed;
+}
+
+.pagination-btn:first-child {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right: none;
+}
+
+.pagination-btn:last-child {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
 }

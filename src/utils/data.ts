@@ -4,8 +4,11 @@ export const mockData = [{
   lastName: 'Smith',
   npi: '1234567890',
   attestationStatus: 'Active',
+  attestationDueDate: '2024-05-15',
   lastAttestationDate: '2023-05-15',
   specialty: 'Cardiology',
+  acceptingPatientStatus: 'Yes',
+  primaryWorkAddress: '1200 Health Dr, San Francisco CA 94102',
   primaryPracticeState: 'CA',
   otherPracticeStates: ['NY', 'NJ']
 }, {
@@ -13,8 +16,11 @@ export const mockData = [{
   lastName: 'Jackson',
   npi: '1213267295',
   attestationStatus: 'Active',
+  attestationDueDate: '2024-05-15',
   lastAttestationDate: '2023-05-15',
   specialty: 'Urologist',
+  acceptingPatientStatus: 'Limited',
+  primaryWorkAddress: '3456 Medical Center Blvd, Los Angeles CA 90210',
   primaryPracticeState: 'CA',
   otherPracticeStates: ['NY', 'NJ']
 }, {
@@ -22,8 +28,11 @@ export const mockData = [{
   lastName: 'Johnson',
   npi: '2345678901',
   attestationStatus: 'Inactive',
+  attestationDueDate: '2023-11-30',
   lastAttestationDate: '2022-11-30',
   specialty: 'Pediatrics',
+  acceptingPatientStatus: 'No',
+  primaryWorkAddress: '789 Children\'s Way, Houston TX 77001',
   primaryPracticeState: 'TX',
   otherPracticeStates: ['FL']
 }, {
@@ -31,8 +40,11 @@ export const mockData = [{
   lastName: 'Williams',
   npi: '3456789012',
   attestationStatus: 'Pending',
+  attestationDueDate: '2024-06-10',
   lastAttestationDate: '2023-06-10',
   specialty: 'Neurology',
+  acceptingPatientStatus: 'Yes',
+  primaryWorkAddress: '456 Brain Center Ave, Seattle WA 98101',
   primaryPracticeState: 'WA',
   otherPracticeStates: ['OR', 'ID', 'CA']
 }, {
@@ -40,8 +52,11 @@ export const mockData = [{
   lastName: 'Brown',
   npi: '4567890123',
   attestationStatus: 'Active',
+  attestationDueDate: '2024-04-22',
   lastAttestationDate: '2023-04-22',
   specialty: 'Dermatology',
+  acceptingPatientStatus: 'Yes',
+  primaryWorkAddress: '321 Skin Care Rd, Chicago IL 60601',
   primaryPracticeState: 'IL',
   otherPracticeStates: ['MI']
 }, {
@@ -49,8 +64,11 @@ export const mockData = [{
   lastName: 'Jones',
   npi: '5678901234',
   attestationStatus: 'Expired',
+  attestationDueDate: '2023-08-15',
   lastAttestationDate: '2022-08-15',
   specialty: 'Orthopedics',
+  acceptingPatientStatus: 'No',
+  primaryWorkAddress: '987 Bone Health St, Philadelphia PA 19101',
   primaryPracticeState: 'PA',
   otherPracticeStates: ['OH', 'WV']
 }, {
@@ -58,8 +76,11 @@ export const mockData = [{
   lastName: 'Garcia',
   npi: '5678901234',
   attestationStatus: 'Active',
+  attestationDueDate: '2026-07-10',
   lastAttestationDate: '2025-07-10',
   specialty: 'Ophthalmology',
+  acceptingPatientStatus: 'Limited',
+  primaryWorkAddress: '654 Vision Center Dr, Pittsburgh PA 15201',
   primaryPracticeState: 'PA',
   otherPracticeStates: []
 }, {
@@ -67,8 +88,11 @@ export const mockData = [{
   lastName: 'Miller',
   npi: '7890123456',
   attestationStatus: 'Active',
+  attestationDueDate: '2025-10-05',
   lastAttestationDate: '2024-10-05',
   specialty: 'Urologist',
+  acceptingPatientStatus: 'Yes',
+  primaryWorkAddress: '147 Urology Plaza, Harrisburg PA 17101',
   primaryPracticeState: 'PA',
   otherPracticeStates: ['NV', 'CA']
 }, {
@@ -76,8 +100,11 @@ export const mockData = [{
   lastName: 'Davis',
   npi: '8901234567',
   attestationStatus: 'Active',
+  attestationDueDate: '2024-02-18',
   lastAttestationDate: '2023-02-18',
   specialty: 'Urologist',
+  acceptingPatientStatus: 'Yes',
+  primaryWorkAddress: '852 Specialty Medical Dr, Sacramento CA 95814',
   primaryPracticeState: 'CA',
   otherPracticeStates: ['CT', 'RI']
 }, {
@@ -85,8 +112,11 @@ export const mockData = [{
   lastName: 'Rodriguez',
   npi: '9012345678',
   attestationStatus: 'Pending',
+  attestationDueDate: '2024-06-01',
   lastAttestationDate: '2023-06-01',
   specialty: 'Urologist',
+  acceptingPatientStatus: 'Limited',
+  primaryWorkAddress: '963 Garden State Medical Ctr, Newark NJ 07101',
   primaryPracticeState: 'NJ',
   otherPracticeStates: ['DE', 'CA']
 }, {
@@ -94,8 +124,11 @@ export const mockData = [{
   lastName: 'Wilson',
   npi: '0123456789',
   attestationStatus: 'Active',
+  attestationDueDate: '2024-01-25',
   lastAttestationDate: '2023-01-25',
   specialty: 'Rheumatology',
+  acceptingPatientStatus: 'Yes',
+  primaryWorkAddress: '741 Mountain View Hospital, Denver CO 80201',
   primaryPracticeState: 'CO',
   otherPracticeStates: ['UT', 'WY']
 }, {
@@ -103,8 +136,11 @@ export const mockData = [{
   lastName: 'Martinez',
   npi: '1122334455',
   attestationStatus: 'Expired',
+  attestationDueDate: '2023-07-20',
   lastAttestationDate: '2022-07-20',
   specialty: 'Gastroenterology',
+  acceptingPatientStatus: 'No',
+  primaryWorkAddress: '258 Digestive Health Center, Kansas City MO 64101',
   primaryPracticeState: 'MO',
   otherPracticeStates: ['KS', 'IA']
 }, {
@@ -112,8 +148,11 @@ export const mockData = [{
   lastName: 'Anderson',
   npi: '2233445566',
   attestationStatus: 'Active',
+  attestationDueDate: '2024-04-05',
   lastAttestationDate: '2023-04-05',
   specialty: 'Pulmonology',
+  acceptingPatientStatus: 'Yes',
+  primaryWorkAddress: '369 Lung Care Institute, Milwaukee WI 53201',
   primaryPracticeState: 'WI',
   otherPracticeStates: ['MN']
 }, {
@@ -121,8 +160,11 @@ export const mockData = [{
   lastName: 'Taylor',
   npi: '3344556677',
   attestationStatus: 'Inactive',
+  attestationDueDate: '2023-09-12',
   lastAttestationDate: '2022-09-12',
   specialty: 'Hematology',
+  acceptingPatientStatus: 'No',
+  primaryWorkAddress: '753 Blood Disorders Center, Richmond VA 23220',
   primaryPracticeState: 'VA',
   otherPracticeStates: ['MD', 'DC']
 }, {
@@ -130,8 +172,11 @@ export const mockData = [{
   lastName: 'Thomas',
   npi: '4455667788',
   attestationStatus: 'Active',
+  attestationDueDate: '2024-03-30',
   lastAttestationDate: '2023-03-30',
   specialty: 'Oncology',
+  acceptingPatientStatus: 'Limited',
+  primaryWorkAddress: '951 Cancer Treatment Center, Charleston SC 29401',
   primaryPracticeState: 'SC',
   otherPracticeStates: ['AL', 'GA']
 }, {
@@ -139,8 +184,11 @@ export const mockData = [{
   lastName: 'Hernandez',
   npi: '5566778899',
   attestationStatus: 'Pending',
+  attestationDueDate: '2024-05-28',
   lastAttestationDate: '2023-05-28',
   specialty: 'Nephrology',
+  acceptingPatientStatus: 'Yes',
+  primaryWorkAddress: '357 Kidney Care Center, New Orleans LA 70112',
   primaryPracticeState: 'LA',
   otherPracticeStates: ['MS', 'AL']
 }, {
@@ -148,8 +196,11 @@ export const mockData = [{
   lastName: 'Thompson',
   npi: '6677889900',
   attestationStatus: 'Active',
+  attestationDueDate: '2024-06-12',
   lastAttestationDate: '2023-06-12',
   specialty: 'Endocrinology',
+  acceptingPatientStatus: 'Yes',
+  primaryWorkAddress: '864 Diabetes & Hormone Center, Miami FL 33101',
   primaryPracticeState: 'FL',
   otherPracticeStates: ['GA', 'SC']
 }, {
@@ -157,8 +208,11 @@ export const mockData = [{
   lastName: 'White',
   npi: '7788990011',
   attestationStatus: 'Active',
+  attestationDueDate: '2024-05-20',
   lastAttestationDate: '2023-05-20',
   specialty: 'Cardiology',
+  acceptingPatientStatus: 'Yes',
+  primaryWorkAddress: '159 Heart Institute, New York NY 10001',
   primaryPracticeState: 'NY',
   otherPracticeStates: ['CT', 'NJ']
 }, {
@@ -166,8 +220,11 @@ export const mockData = [{
   lastName: 'Lewis',
   npi: '8899001122',
   attestationStatus: 'Expired',
+  attestationDueDate: '2023-12-10',
   lastAttestationDate: '2022-12-10',
   specialty: 'Pediatrics',
+  acceptingPatientStatus: 'No',
+  primaryWorkAddress: '753 Children\'s Medical Plaza, Columbus OH 43201',
   primaryPracticeState: 'OH',
   otherPracticeStates: ['IN', 'KY']
 }, {
@@ -175,8 +232,11 @@ export const mockData = [{
   lastName: 'Hall',
   npi: '9900112233',
   attestationStatus: 'Active',
+  attestationDueDate: '2024-04-18',
   lastAttestationDate: '2023-04-18',
   specialty: 'Emergency Medicine',
+  acceptingPatientStatus: 'Yes',
+  primaryWorkAddress: '486 Emergency Care Center, Spokane WA 99201',
   primaryPracticeState: 'WA',
   otherPracticeStates: ['OR']
 }, {
@@ -184,8 +244,11 @@ export const mockData = [{
   lastName: 'Allen',
   npi: '1011121314',
   attestationStatus: 'Pending',
+  attestationDueDate: '2024-06-08',
   lastAttestationDate: '2023-06-08',
   specialty: 'Family Medicine',
+  acceptingPatientStatus: 'Limited',
+  primaryWorkAddress: '627 Family Health Clinic, Dallas TX 75201',
   primaryPracticeState: 'TX',
   otherPracticeStates: ['OK', 'AR']
 }, {
@@ -193,8 +256,11 @@ export const mockData = [{
   lastName: 'Young',
   npi: '1112131415',
   attestationStatus: 'Active',
+  attestationDueDate: '2024-03-22',
   lastAttestationDate: '2023-03-22',
   specialty: 'Anesthesiology',
+  acceptingPatientStatus: 'Yes',
+  primaryWorkAddress: '394 Surgery Center Dr, Boston MA 02101',
   primaryPracticeState: 'MA',
   otherPracticeStates: ['NH', 'VT']
 }, {
@@ -202,8 +268,11 @@ export const mockData = [{
   lastName: 'King',
   npi: '1213141516',
   attestationStatus: 'Inactive',
+  attestationDueDate: '2023-11-15',
   lastAttestationDate: '2022-11-15',
   specialty: 'Radiology',
+  acceptingPatientStatus: 'No',
+  primaryWorkAddress: '158 Imaging Center Blvd, Las Vegas NV 89101',
   primaryPracticeState: 'NV',
   otherPracticeStates: ['CA', 'AZ']
 }, {
@@ -211,8 +280,11 @@ export const mockData = [{
   lastName: 'Wright',
   npi: '1314151617',
   attestationStatus: 'Active',
+  attestationDueDate: '2024-05-05',
   lastAttestationDate: '2023-05-05',
   specialty: 'Pathology',
+  acceptingPatientStatus: 'Yes',
+  primaryWorkAddress: '729 Laboratory Services Dr, Baltimore MD 21201',
   primaryPracticeState: 'MD',
   otherPracticeStates: ['VA', 'DC']
 }, {
@@ -220,8 +292,11 @@ export const mockData = [{
   lastName: 'Lopez',
   npi: '1415161718',
   attestationStatus: 'Active',
+  attestationDueDate: '2024-02-28',
   lastAttestationDate: '2023-02-28',
   specialty: 'Obstetrics and Gynecology',
+  acceptingPatientStatus: 'Limited',
+  primaryWorkAddress: '546 Women\'s Health Center, Raleigh NC 27601',
   primaryPracticeState: 'NC',
   otherPracticeStates: ['SC', 'VA']
 }, {
@@ -229,8 +304,11 @@ export const mockData = [{
   lastName: 'Hill',
   npi: '1516171819',
   attestationStatus: 'Expired',
+  attestationDueDate: '2023-09-30',
   lastAttestationDate: '2022-09-30',
   specialty: 'Otolaryngology',
+  acceptingPatientStatus: 'No',
+  primaryWorkAddress: '812 ENT Specialists Plaza, Atlanta GA 30301',
   primaryPracticeState: 'GA',
   otherPracticeStates: ['FL', 'AL']
 }, {
@@ -238,8 +316,11 @@ export const mockData = [{
   lastName: 'Scott',
   npi: '1617181920',
   attestationStatus: 'Active',
+  attestationDueDate: '2024-04-12',
   lastAttestationDate: '2023-04-12',
   specialty: 'Ophthalmology',
+  acceptingPatientStatus: 'Yes',
+  primaryWorkAddress: '367 Eye Care Institute, Minneapolis MN 55401',
   primaryPracticeState: 'MN',
   otherPracticeStates: ['WI', 'IA']
 }, {
@@ -247,8 +328,11 @@ export const mockData = [{
   lastName: 'Green',
   npi: '1718192021',
   attestationStatus: 'Pending',
+  attestationDueDate: '2024-06-15',
   lastAttestationDate: '2023-06-15',
   specialty: 'Infectious Disease',
+  acceptingPatientStatus: 'Yes',
+  primaryWorkAddress: '584 Infectious Disease Center, Portland OR 97201',
   primaryPracticeState: 'OR',
   otherPracticeStates: ['WA', 'CA']
 }, {
@@ -256,8 +340,11 @@ export const mockData = [{
   lastName: 'Adams',
   npi: '1819202122',
   attestationStatus: 'Active',
+  attestationDueDate: '2024-03-08',
   lastAttestationDate: '2023-03-08',
   specialty: 'Plastic Surgery',
+  acceptingPatientStatus: 'Limited',
+  primaryWorkAddress: '925 Cosmetic Surgery Center, Hartford CT 06101',
   primaryPracticeState: 'CT',
   otherPracticeStates: ['NY', 'MA']
 }, {
@@ -265,8 +352,11 @@ export const mockData = [{
   lastName: 'Baker',
   npi: '1920212223',
   attestationStatus: 'Active',
+  attestationDueDate: '2024-05-25',
   lastAttestationDate: '2023-05-25',
   specialty: 'Physical Medicine and Rehabilitation',
+  acceptingPatientStatus: 'Yes',
+  primaryWorkAddress: '741 Rehabilitation Hospital, Phoenix AZ 85001',
   primaryPracticeState: 'AZ',
   otherPracticeStates: ['NM', 'NV']
 }, {
@@ -274,8 +364,11 @@ export const mockData = [{
   lastName: 'Gonzalez',
   npi: '2021222324',
   attestationStatus: 'Inactive',
+  attestationDueDate: '2023-10-20',
   lastAttestationDate: '2022-10-20',
   specialty: 'Allergy and Immunology',
+  acceptingPatientStatus: 'No',
+  primaryWorkAddress: '613 Allergy Treatment Center, Nashville TN 37201',
   primaryPracticeState: 'TN',
   otherPracticeStates: ['KY', 'AL']
 }, {
@@ -283,8 +376,11 @@ export const mockData = [{
   lastName: 'Nelson',
   npi: '2122232425',
   attestationStatus: 'Active',
+  attestationDueDate: '2024-04-30',
   lastAttestationDate: '2023-04-30',
   specialty: 'Sports Medicine',
+  acceptingPatientStatus: 'Yes',
+  primaryWorkAddress: '457 Sports Medicine Clinic, Colorado Springs CO 80901',
   primaryPracticeState: 'CO',
   otherPracticeStates: ['WY', 'MT']
 }, {
@@ -292,8 +388,11 @@ export const mockData = [{
   lastName: 'Carter',
   npi: '2223242526',
   attestationStatus: 'Active',
+  attestationDueDate: '2024-06-05',
   lastAttestationDate: '2023-06-05',
   specialty: 'Geriatrics',
+  acceptingPatientStatus: 'Limited',
+  primaryWorkAddress: '829 Senior Care Center, Salt Lake City UT 84101',
   primaryPracticeState: 'UT',
   otherPracticeStates: ['ID', 'WY']
 }, {
@@ -301,8 +400,11 @@ export const mockData = [{
   lastName: 'Mitchell',
   npi: '2324252627',
   attestationStatus: 'Expired',
+  attestationDueDate: '2023-08-22',
   lastAttestationDate: '2022-08-22',
   specialty: 'Nuclear Medicine',
+  acceptingPatientStatus: 'No',
+  primaryWorkAddress: '516 Nuclear Medicine Center, Boise ID 83701',
   primaryPracticeState: 'ID',
   otherPracticeStates: ['MT', 'WY']
 }, {
@@ -310,8 +412,11 @@ export const mockData = [{
   lastName: 'Perez',
   npi: '2425262728',
   attestationStatus: 'Active',
+  attestationDueDate: '2024-05-08',
   lastAttestationDate: '2023-05-08',
   specialty: 'Pain Management',
+  acceptingPatientStatus: 'Yes',
+  primaryWorkAddress: '682 Pain Relief Center, Baton Rouge LA 70801',
   primaryPracticeState: 'LA',
   otherPracticeStates: ['TX', 'AR']
 }, {
@@ -319,8 +424,11 @@ export const mockData = [{
   lastName: 'Roberts',
   npi: '2526272829',
   attestationStatus: 'Pending',
+  attestationDueDate: '2024-06-18',
   lastAttestationDate: '2023-06-18',
   specialty: 'Critical Care Medicine',
+  acceptingPatientStatus: 'Yes',
+  primaryWorkAddress: '394 Intensive Care Unit, Detroit MI 48201',
   primaryPracticeState: 'MI',
   otherPracticeStates: ['OH', 'IN']
 }, {
@@ -328,8 +436,11 @@ export const mockData = [{
   lastName: 'Turner',
   npi: '2627282930',
   attestationStatus: 'Active',
+  attestationDueDate: '2024-03-15',
   lastAttestationDate: '2023-03-15',
   specialty: 'Sleep Medicine',
+  acceptingPatientStatus: 'Limited',
+  primaryWorkAddress: '157 Sleep Disorders Center, Charleston WV 25301',
   primaryPracticeState: 'WV',
   otherPracticeStates: ['PA', 'OH']
 }, {
@@ -337,8 +448,11 @@ export const mockData = [{
   lastName: 'Phillips',
   npi: '2728293031',
   attestationStatus: 'Active',
+  attestationDueDate: '2024-04-28',
   lastAttestationDate: '2023-04-28',
   specialty: 'Interventional Cardiology',
+  acceptingPatientStatus: 'Yes',
+  primaryWorkAddress: '826 Heart Surgery Center, Wichita KS 67201',
   primaryPracticeState: 'KS',
   otherPracticeStates: ['MO', 'OK']
 }, {
@@ -346,8 +460,11 @@ export const mockData = [{
   lastName: 'Campbell',
   npi: '2829303132',
   attestationStatus: 'Inactive',
+  attestationDueDate: '2023-12-05',
   lastAttestationDate: '2022-12-05',
   specialty: 'Vascular Surgery',
+  acceptingPatientStatus: 'No',
+  primaryWorkAddress: '593 Vascular Surgery Institute, Portland ME 04101',
   primaryPracticeState: 'ME',
   otherPracticeStates: ['NH', 'VT']
 }, {
@@ -355,8 +472,11 @@ export const mockData = [{
   lastName: 'Parker',
   npi: '2930313233',
   attestationStatus: 'Active',
+  attestationDueDate: '2024-05-12',
   lastAttestationDate: '2023-05-12',
   specialty: 'Thoracic Surgery',
+  acceptingPatientStatus: 'Limited',
+  primaryWorkAddress: '741 Chest Surgery Center, Birmingham AL 35201',
   primaryPracticeState: 'AL',
   otherPracticeStates: ['MS', 'GA']
 }, {
@@ -364,8 +484,11 @@ export const mockData = [{
   lastName: 'Evans',
   npi: '3031323334',
   attestationStatus: 'Active',
+  attestationDueDate: '2024-06-22',
   lastAttestationDate: '2023-06-22',
   specialty: 'Occupational Medicine',
+  acceptingPatientStatus: 'Yes',
+  primaryWorkAddress: '468 Workplace Health Center, Fargo ND 58101',
   primaryPracticeState: 'ND',
   otherPracticeStates: ['SD', 'MN']
 }, {
@@ -373,8 +496,11 @@ export const mockData = [{
   lastName: 'Edwards',
   npi: '3132333435',
   attestationStatus: 'Pending',
+  attestationDueDate: '2024-06-25',
   lastAttestationDate: '2023-06-25',
   specialty: 'Forensic Pathology',
+  acceptingPatientStatus: 'Yes',
+  primaryWorkAddress: '825 Medical Examiner Office, Montpelier VT 05601',
   primaryPracticeState: 'VT',
   otherPracticeStates: ['NH', 'MA']
 }, {
@@ -382,8 +508,11 @@ export const mockData = [{
   lastName: 'Collins',
   npi: '3233343536',
   attestationStatus: 'Active',
+  attestationDueDate: '2024-03-18',
   lastAttestationDate: '2023-03-18',
   specialty: 'Addiction Medicine',
+  acceptingPatientStatus: 'Yes',
+  primaryWorkAddress: '317 Recovery Treatment Center, Providence RI 02901',
   primaryPracticeState: 'RI',
   otherPracticeStates: ['CT', 'MA']
 }, {
@@ -391,8 +520,11 @@ export const mockData = [{
   lastName: 'Stewart',
   npi: '3334353637',
   attestationStatus: 'Expired',
+  attestationDueDate: '2023-11-08',
   lastAttestationDate: '2022-11-08',
   specialty: 'Adolescent Medicine',
+  acceptingPatientStatus: 'No',
+  primaryWorkAddress: '649 Teen Health Center, Dover DE 19901',
   primaryPracticeState: 'DE',
   otherPracticeStates: ['PA', 'NJ']
 }, {
@@ -400,8 +532,11 @@ export const mockData = [{
   lastName: 'Sanchez',
   npi: '3435363738',
   attestationStatus: 'Active',
+  attestationDueDate: '2024-04-15',
   lastAttestationDate: '2023-04-15',
   specialty: 'Maternal-Fetal Medicine',
+  acceptingPatientStatus: 'Limited',
+  primaryWorkAddress: '582 Women\'s Specialty Hospital, Honolulu HI 96801',
   primaryPracticeState: 'HI',
   otherPracticeStates: ['CA']
 }, {
@@ -409,8 +544,11 @@ export const mockData = [{
   lastName: 'Morris',
   npi: '3536373839',
   attestationStatus: 'Active',
+  attestationDueDate: '2024-05-30',
   lastAttestationDate: '2023-05-30',
   specialty: 'Neonatology',
+  acceptingPatientStatus: 'Yes',
+  primaryWorkAddress: '376 NICU Center, Anchorage AK 99501',
   primaryPracticeState: 'AK',
   otherPracticeStates: ['WA']
 }, {
@@ -418,8 +556,11 @@ export const mockData = [{
   lastName: 'Rogers',
   npi: '3637383940',
   attestationStatus: 'Inactive',
+  attestationDueDate: '2023-09-18',
   lastAttestationDate: '2022-09-18',
   specialty: 'Pediatric Cardiology',
+  acceptingPatientStatus: 'No',
+  primaryWorkAddress: '194 Children\'s Heart Center, Billings MT 59101',
   primaryPracticeState: 'MT',
   otherPracticeStates: ['ID', 'WY']
 }, {
@@ -427,8 +568,11 @@ export const mockData = [{
   lastName: 'Reed',
   npi: '3738394041',
   attestationStatus: 'Active',
+  attestationDueDate: '2024-06-02',
   lastAttestationDate: '2023-06-02',
   specialty: 'Pediatric Surgery',
+  acceptingPatientStatus: 'Limited',
+  primaryWorkAddress: '758 Pediatric Surgery Center, Sioux Falls SD 57101',
   primaryPracticeState: 'SD',
   otherPracticeStates: ['ND', 'MN']
 }, {
@@ -436,8 +580,11 @@ export const mockData = [{
   lastName: 'Cook',
   npi: '3839404142',
   attestationStatus: 'Pending',
+  attestationDueDate: '2024-06-28',
   lastAttestationDate: '2023-06-28',
   specialty: 'Medical Genetics',
+  acceptingPatientStatus: 'Yes',
+  primaryWorkAddress: '431 Genetics Research Center, Omaha NE 68101',
   primaryPracticeState: 'NE',
   otherPracticeStates: ['KS', 'IA']
 }, {
@@ -445,8 +592,11 @@ export const mockData = [{
   lastName: 'Bailey',
   npi: '3940414243',
   attestationStatus: 'Active',
+  attestationDueDate: '2024-03-25',
   lastAttestationDate: '2023-03-25',
   specialty: 'Preventive Medicine',
+  acceptingPatientStatus: 'Yes',
+  primaryWorkAddress: '625 Public Health Center, Des Moines IA 50301',
   primaryPracticeState: 'IA',
   otherPracticeStates: ['IL', 'MN']
 }, {
@@ -454,8 +604,11 @@ export const mockData = [{
   lastName: 'Rivera',
   npi: '4041424344',
   attestationStatus: 'Active',
+  attestationDueDate: '2024-05-18',
   lastAttestationDate: '2023-05-18',
   specialty: 'Hospice and Palliative Medicine',
+  acceptingPatientStatus: 'Limited',
+  primaryWorkAddress: '397 Palliative Care Center, Cheyenne WY 82001',
   primaryPracticeState: 'WY',
   otherPracticeStates: ['CO', 'MT']
 }];

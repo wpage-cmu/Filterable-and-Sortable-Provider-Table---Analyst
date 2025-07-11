@@ -143,7 +143,7 @@ export const generateSummaryWithLLM = async (
     return "No providers found matching your search criteria.";
   }
 
-  const prompt = `You are providing a natural language summary of search results for a healthcare provider database.
+  const prompt = `You are providing a natural language summary of search results for a healthcare provider database. Be concise but descriptive."
 
 ORIGINAL USER QUERY: "${originalQuery}"
 
