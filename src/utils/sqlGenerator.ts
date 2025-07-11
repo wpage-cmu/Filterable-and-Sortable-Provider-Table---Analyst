@@ -10,43 +10,76 @@ const columnMapping = {
   otherPracticeStates: 'other_practice_states'
 };
 
-export const generateSql = (searchQuery: string, filters: Record<string, any>, sortConfig: {
-  key: string | null;
-  direction: 'asc' | 'desc';
-}): string => {
-  let sql = 'SELECT\n  *\nFROM providers\nWHERE 1=1';
+export const generateSql = (
+  searchQuery: string, 
+  filters: Record<string, any>, 
+  sortConfig: {
+    key: string | null;
+    direction: 'asc' | 'desc';
+  }
+): string => {
+  let sql = 'SELECT\n  *\nFROM providers';
+  
+  const conditions: string[] = [];
   
   // Add search conditions
   if (searchQuery && searchQuery.trim()) {
-    sql += `\n  AND (\n    first_name LIKE '%${searchQuery}%'\n    OR last_name LIKE '%${searchQuery}%'\n    OR specialty LIKE '%${searchQuery}%'\n  )`;
+    conditions.push(`(\n    first_name LIKE '%${searchQuery.trim()}%'\n    OR last_name LIKE '%${searchQuery.trim()}%'\n    OR specialty LIKE '%${searchQuery.trim()}%'\n  )`);
   }
   
   // Add filters
   Object.entries(filters).forEach(([column, value]) => {
-    const sqlColumn = columnMapping[column] || column;
-    
     if (value && Array.isArray(value) && value.length > 0) {
-      // Handle array filters (multiselect)
-      const values = value.map(v => `'${v.replace(/'/g, "''")}'`).join(', ');
-      
-      if (column === 'otherPracticeStates') {
-        // Special handling for array columns in SQL
-        sql += `\n  AND (\n    ${values.split(', ').map(val => `${sqlColumn} LIKE '%${val.replace(/'/g, '')}%'`).join('\n    OR ')}\n  )`;
-      } else {
-        sql += `\n  AND ${sqlColumn} IN (${values})`;
-      }
+      const values = value.map(v => `'${v}'`).join(', ');
+      conditions.push(`${column} IN (${values})`);
     } else if (value && typeof value === 'string' && value.trim().length > 0) {
-      // Handle text filters
-      const escapedValue = value.replace(/'/g, "''");
-      sql += `\n  AND ${sqlColumn} LIKE '%${escapedValue}%'`;
+      conditions.push(`${column} LIKE '%${value.trim()}%'`);
     }
   });
   
+  // Add WHERE clause only if there are conditions
+  if (conditions.length > 0) {
+    sql += '\nWHERE ' + conditions.join('\n  AND ');
+  }
+  
   // Add sorting
   if (sortConfig.key) {
-    const sqlSortColumn = columnMapping[sortConfig.key] || sortConfig.key;
-    sql += `\nORDER BY ${sqlSortColumn} ${sortConfig.direction.toUpperCase()}`;
+    sql += `\nORDER BY ${sortConfig.key} ${sortConfig.direction.toUpperCase()}`;
   }
   
   return sql;
+};
+
+// Helper function to check if there are any active filters
+export const hasActiveFilters = (
+  searchQuery: string,
+  filters: Record<string, any>,
+  sortConfig: {
+    key: string | null;
+    direction: 'asc' | 'desc';
+  }
+): boolean => {
+  // Check if search query exists
+  if (searchQuery && searchQuery.trim()) {
+    return true;
+  }
+  
+  // Check if any filters are applied
+  const hasFilters = Object.entries(filters).some(([key, value]) => {
+    if (Array.isArray(value)) {
+      return value.length > 0;
+    }
+    return value && typeof value === 'string' && value.trim().length > 0;
+  });
+  
+  if (hasFilters) {
+    return true;
+  }
+  
+  // Check if sorting is applied
+  if (sortConfig.key) {
+    return true;
+  }
+  
+  return false;
 };
