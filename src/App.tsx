@@ -204,73 +204,7 @@ export function App() {
           if (value.startsWith('<')) {
             const compareDate = new Date(value.substring(1));
             const matches = itemDate < compareDate;
-            console.log(`📅 Date filter ${key}: ${item[key]} < ${value.substring(1            </div>
-
-            {/* Search Error */}
-            {searchError && (
-              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-red-800">{searchError}</p>
-              </div>
-            )}
-
-            {/* Search Results Summary */}
-            {searchResult && (
-              <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <div className="flex items-start gap-3">
-                  <img src={sparklesIcon} alt="AI" className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-green-800 font-medium mb-1">Search Results</p>
-                    <p className="text-green-700">{searchResult.summary}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Table Section */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <TableHeader 
-            resultCount={displayData.length}
-            totalCount={data.length}
-            isFiltered={!!searchResult}
-            onClearFilters={() => {
-              setSearchResult(null);
-              setSearchQuery('');
-              // Clear table filters when using the TableHeader clear button
-              if (tableRef.current?.clearAllFilters) {
-                tableRef.current.clearAllFilters();
-              }
-            }}
-            columns={columns}
-            onToggleColumn={toggleColumnVisibility}
-            onOpenSqlModal={() => setIsSqlModalOpen(true)}
-          />
-          
-          <ProviderTable 
-            ref={tableRef}
-            data={displayData}
-            columns={visibleColumns}
-            initialSort={searchResult?.sort}
-            onFiltersChange={(filters) => {
-              setCurrentTableFilters(filters);
-            }}
-            onSortChange={(sortConfig) => {
-              setCurrentTableSort(sortConfig);
-            }}
-          />
-        </div>
-      </div>
-
-      {/* SQL Modal */}
-      <SqlModal 
-        isOpen={isSqlModalOpen}
-        onClose={() => setIsSqlModalOpen(false)}
-        sqlQuery={currentSql}
-      />
-    </div>
-  );
-} = ${matches}`);
+            console.log(`📅 Date filter ${key}: ${item[key]} < ${value.substring(1)} = ${matches}`);
             return matches;
           } else if (value.startsWith('>')) {
             const compareDate = new Date(value.substring(1));
@@ -354,7 +288,7 @@ export function App() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Search Section - KEEPING YOUR ORIGINAL DESIGN */}
+        {/* Search Section */}
         <div className="mb-8">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="mb-4">
@@ -417,3 +351,70 @@ export function App() {
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* Search Error */}
+            {searchError && (
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-800">{searchError}</p>
+              </div>
+            )}
+
+            {/* Search Results Summary */}
+            {searchResult && (
+              <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <img src={sparklesIcon} alt="AI" className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-green-800 font-medium mb-1">Search Results</p>
+                    <p className="text-green-700">{searchResult.summary}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Table Section */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <TableHeader 
+            resultCount={displayData.length}
+            totalCount={data.length}
+            isFiltered={!!searchResult}
+            onClearFilters={() => {
+              setSearchResult(null);
+              setSearchQuery('');
+              // Clear table filters when using the TableHeader clear button
+              if (tableRef.current?.clearAllFilters) {
+                tableRef.current.clearAllFilters();
+              }
+            }}
+            columns={columns}
+            onToggleColumn={toggleColumnVisibility}
+            onOpenSqlModal={() => setIsSqlModalOpen(true)}
+          />
+          
+          <ProviderTable 
+            ref={tableRef}
+            data={displayData}
+            columns={visibleColumns}
+            initialSort={searchResult?.sort}
+            onFiltersChange={(filters) => {
+              setCurrentTableFilters(filters);
+            }}
+            onSortChange={(sortConfig) => {
+              setCurrentTableSort(sortConfig);
+            }}
+          />
+        </div>
+      </div>
+
+      {/* SQL Modal */}
+      <SqlModal 
+        isOpen={isSqlModalOpen}
+        onClose={() => setIsSqlModalOpen(false)}
+        sqlQuery={currentSql}
+      />
+    </div>
+  );
+}
