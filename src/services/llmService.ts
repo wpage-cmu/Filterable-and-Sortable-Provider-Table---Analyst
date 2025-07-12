@@ -24,7 +24,7 @@ export const searchProvidersWithLLM = async (
   console.log('📊 Total data records:', data.length);
   
   // Prepare context data
-  const sampleData = data.slice(0, 3);
+  const sampleData = data;
   const availableSpecialties = [...new Set(data.map(item => item.specialty))].slice(0, 10);
   const availableStates = [...new Set(data.map(item => item.primaryPracticeState))];
 
