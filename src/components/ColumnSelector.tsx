@@ -3,7 +3,7 @@ import { Settings } from 'lucide-react';
 
 export const ColumnSelector = ({
   columns,
-  toggleColumnVisibility
+  onToggleColumn
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -38,7 +38,7 @@ export const ColumnSelector = ({
                     ? 'bg-blue-50 hover:bg-blue-100 text-blue-900' 
                     : 'hover:bg-gray-50 text-gray-700'
                 }`}
-                onClick={() => toggleColumnVisibility(column.id)}
+                onClick={() => onToggleColumn(column.id)}
               >
                 <div className={`w-4 h-4 mr-3 rounded border-2 flex items-center justify-center ${
                   column.isVisible 
