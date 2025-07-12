@@ -25,11 +25,6 @@ export const generateSql = (
   
   const conditions: string[] = [];
   
-  // Add search conditions
-  if (searchQuery && searchQuery.trim()) {
-    conditions.push(`(\n    first_name LIKE '%${searchQuery.trim()}%'\n    OR last_name LIKE '%${searchQuery.trim()}%'\n    OR specialty LIKE '%${searchQuery.trim()}%'\n    OR primary_work_address LIKE '%${searchQuery.trim()}%'\n  )`);
-  }
-  
   // Add filters - now using column mapping
   Object.entries(filters).forEach(([column, value]) => {
     if (value && Array.isArray(value) && value.length > 0) {
