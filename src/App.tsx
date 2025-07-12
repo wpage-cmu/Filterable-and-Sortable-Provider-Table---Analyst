@@ -46,7 +46,7 @@ export function App() {
 
   const visibleColumns = columns.filter(column => column.isVisible);
 
-  const toggleColumnVisibility = (columnId) => {
+  const toggleColumnVisibility = (columnId: string) => {
     setColumns(columns.map(column => 
       column.id === columnId 
         ? { ...column, isVisible: !column.isVisible }
@@ -54,7 +54,7 @@ export function App() {
     ));
   };
   
-  const handleSearch = async (query) => {
+  const handleSearch = async (query: string) => {
     console.log('🎬 SEARCH FLOW STARTED');
     console.log('=' .repeat(50));
     console.log('📝 User Query:', query);
@@ -170,12 +170,12 @@ export function App() {
     }
   };
 
-  const formatResultCount = (resultCount, description = '') => {
+  const formatResultCount = (resultCount: number, description: string = '') => {
     const plural = resultCount === 1 ? 'provider' : 'providers';
     return `Found ${resultCount} ${plural} ${description}`;
   };
 
-  const handleKeyPress = (e) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleSearch(searchQuery);
     }
@@ -246,7 +246,7 @@ export function App() {
     return result;
   };
   
-  const handleDemoClick = (question) => {
+  const handleDemoClick = (question: string) => {
     setSearchQuery(question);
     handleSearch(question);
     setShowDemo(false);
@@ -259,98 +259,98 @@ export function App() {
   const [currentTableSort, setCurrentTableSort] = useState({ key: null, direction: 'asc' });
   
   // Generate SQL that updates with current state
-  const currentSql = generateSql(searchQuery, currentTableFilters, currentTableSort);
-
+  const currentSql = generateSql(searchQuery, {
+    ...searchResult?.filters,
+    ...currentTableFilters
+  }, currentTableSort);
+  
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center gap-4">
-              <CAQHLogo />
-              <div className="h-8 w-px bg-gray-300"></div>
-              <h1 className="text-2xl font-bold text-gray-900">Provider Search</h1>
-            </div>
-            <div className="flex items-center gap-3">
-              <button className="p-2 text-gray-400 hover:text-gray-600">
-                <Bell className="w-5 h-5" />
-              </button>
-              <button className="p-2 text-gray-400 hover:text-gray-600">
-                <HelpCircle className="w-5 h-5" />
-              </button>
-              <button className="p-2 text-gray-400 hover:text-gray-600">
-                <Settings className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
+    <div className="min-h-screen bg-gray-100">
+      {/* Top Banner */}
+      <header className="w-full bg-white flex items-center px-10 h-16 border-b border-gray-200 sticky top-0 z-50">
+        <CAQHLogo className="w-auto h-8 mr-6" />
+        <div className="portal-title text-lg font-bold text-blue-900 mr-auto font-['Volte']">
+          Provider Directory Portal
         </div>
-      </div>
+        <div className="flex items-center space-x-4">
+          <Bell className="w-5 h-5 text-gray-600 cursor-pointer" />
+          <HelpCircle className="w-5 h-5 text-gray-600 cursor-pointer" />
+          <Settings className="w-5 h-5 text-gray-600 cursor-pointer" />
+        </div>
+      </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Main Content */}
+      <div className="px-10 py-8">
         {/* Search Section */}
         <div className="mb-8">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">Natural Language Search</h2>
-              <p className="text-gray-600">Ask questions about providers in plain English</p>
+            <div className="flex items-center gap-3 mb-6">
+              <img src={sparklesIcon} alt="AI" className="w-6 h-6" />
+              <h1 className="text-2xl font-bold text-gray-900">Ask anything about your providers</h1>
             </div>
             
-            <div className="flex gap-4 items-end relative">
-              <div className="flex-1">
+            <div className="space-y-4">
+              <div className="relative">
                 <input
                   type="text"
-                  placeholder="Ask about providers... (e.g., 'Show me active cardiologists in California')"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Try: 'Show me cardiologists in California' or 'Which providers need to attest soon?'"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  disabled={isSearching}
                 />
+                {isSearching && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+                  </div>
+                )}
               </div>
               
-              <button
-                onClick={() => handleSearch(searchQuery)}
-                disabled={isSearching || !searchQuery.trim()}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                {isSearching && <Loader2 className="w-4 h-4 animate-spin" />}
-                {isSearching ? 'Searching...' : 'Search'}
-              </button>
-              
-              <div className="flex gap-2">
+              <div className="flex justify-between items-center">
                 <button
-                  onClick={() => setShowDemo(!showDemo)}
-                  className="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1"
+                  onClick={() => handleSearch(searchQuery)}
+                  disabled={isSearching || !searchQuery.trim()}
+                  className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-medium transition-colors"
                 >
-                  <Lightbulb className="w-4 h-4" />
-                  <span>Try examples</span>
+                  {isSearching ? 'Searching...' : 'Search'}
                 </button>
-              </div>
-                  
-              {showDemo && (
-                <div className="absolute top-full right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                  <div className="p-3 border-b border-gray-200 flex justify-between items-center">
-                    <span className="font-medium text-gray-900">Example Questions</span>
-                    <button
-                      onClick={() => setShowDemo(false)}
-                      className="text-gray-400 hover:text-gray-600"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <div className="p-2">
-                    {demoQuestions.map((question, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleDemoClick(question)}
-                        className="w-full text-left p-2 hover:bg-gray-50 rounded text-sm text-gray-700 hover:text-gray-900"
-                      >
-                        {question}
-                      </button>
-                    ))}
-                  </div>
+                
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowDemo(!showDemo)}
+                    className="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1"
+                  >
+                    <Lightbulb className="w-4 h-4" />
+                    <span>Try examples</span>
+                  </button>
                 </div>
-              )}
+                    
+                    {showDemo && (
+                      <div className="absolute top-full right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                        <div className="p-3 border-b border-gray-200 flex justify-between items-center">
+                          <span className="font-medium text-gray-900">Example Questions</span>
+                          <button
+                            onClick={() => setShowDemo(false)}
+                            className="text-gray-400 hover:text-gray-600"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <div className="p-2">
+                          {demoQuestions.map((question, index) => (
+                            <button
+                              key={index}
+                              onClick={() => handleDemoClick(question)}
+                              className="w-full text-left p-2 hover:bg-gray-50 rounded text-sm text-gray-700 hover:text-gray-900"
+                            >
+                              {question}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+              </div>
             </div>
 
             {/* Search Error */}
