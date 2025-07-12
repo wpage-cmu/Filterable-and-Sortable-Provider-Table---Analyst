@@ -316,7 +316,7 @@ export function App() {
                   {isSearching ? 'Searching...' : 'Search'}
                 </button>
                 
-                <div className="flex items-center gap-4">
+                <div className="flex gap-2">
                   <button
                     onClick={() => setShowDemo(!showDemo)}
                     className="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1"
@@ -324,6 +324,7 @@ export function App() {
                     <Lightbulb className="w-4 h-4" />
                     <span>Try examples</span>
                   </button>
+                </div>
                     
                     {showDemo && (
                       <div className="absolute top-full right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
@@ -349,8 +350,6 @@ export function App() {
                         </div>
                       </div>
                     )}
-                  </div>
-                </div>
               </div>
             </div>
 
