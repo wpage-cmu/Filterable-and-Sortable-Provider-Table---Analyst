@@ -216,52 +216,107 @@ export const ProviderTable = forwardRef(({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [openDropdown]);
   
-  return <div className="updates-table-wrapper">
+  return (
+    <div className="updates-table-wrapper">
       <table className="updates-table">
         <thead>
           <tr>
-            {columns.map(column => <th key={column.id} className="sortable" onClick={() => requestSort(column.accessor)}>
+            {columns.map(column => (
+              <th key={column.id} className="sortable" onClick={() => requestSort(column.accessor)}>
                 <div className="th-content">
                   <span>{column.Header}</span>
                   <span className="sort-icon-container">
-                    {sortConfig.key === column.accessor ? sortConfig.direction === 'asc' ? <ChevronUpIcon className="sort-icon" /> : <ChevronDownIcon className="sort-icon" /> : <div className="sort-icon-placeholder"></div>}
+                    {sortConfig.key === column.accessor ? 
+                      sortConfig.direction === 'asc' ? 
+                        <ChevronUpIcon className="sort-icon" /> : 
+                        <ChevronDownIcon className="sort-icon" /> : 
+                      <div className="sort-icon-placeholder"></div>
+                    }
                   </span>
                 </div>
-              </th>)}
+              </th>
+            ))}
           </tr>
           <tr className="filter-row">
-            {columns.map(column => <th key={`filter-${column.id}`} className="filter-cell">
-                {isMultiselectColumn(column.accessor) ? <div className="filter-dropdown">
-                    <button onClick={() => setOpenDropdown(openDropdown === column.accessor ? null : column.accessor)} className="filter-btn">
-                      {filters[column.accessor]?.length > 0 ? `${filters[column.accessor].length} selected` : 'Filter...'}
+            {columns.map(column => (
+              <th key={`filter-${column.id}`} className="filter-cell">
+                {isMultiselectColumn(column.accessor) ? (
+                  <div className="filter-dropdown">
+                    <button 
+                      onClick={() => setOpenDropdown(openDropdown === column.accessor ? null : column.accessor)} 
+                      className="filter-btn"
+                    >
+                      {filters[column.accessor]?.length > 0 ? 
+                        `${filters[column.accessor].length} selected` : 
+                        'Filter...'
+                      }
                     </button>
-                    {openDropdown === column.accessor && <div className="filter-popup active">
-                        {getUniqueValues(column.accessor).map(value => <div key={value} className="filter-option" onClick={e => {
-                  e.stopPropagation();
-                  handleFilterChange(column.accessor, value);
-                }}>
-                            <input type="checkbox" checked={filters[column.accessor]?.includes(value) || false} onChange={() => {}} />
-                            {value}
-                          </div>)}
-                      </div>}
-                  </div> : <input type="text" placeholder="Filter..." className="search-input" value={filters[column.accessor] || ''} onChange={e => handleFilterChange(column.accessor, e.target.value)} />}
-              </th>)}
+                    {openDropdown === column.accessor && (
+                      <div className="filter-popup active">
+                        {getUniqueValues(column.accessor).map(value => (
+                          <div 
+                            key={value} 
+                            className="filter-option" 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleFilterChange(column.accessor, value);
+                            }}
+                          >
+                            <input 
+                              type="checkbox" 
+                              checked={filters[column.accessor]?.includes(value) || false} 
+                              onChange={() => {}} 
+                            />
+                            <span>{value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <input 
+                    type="text" 
+                    placeholder="Filter..." 
+                    className="search-input" 
+                    value={filters[column.accessor] || ''} 
+                    onChange={(e) => handleFilterChange(column.accessor, e.target.value)} 
+                  />
+                )}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
-          {paginatedData.length > 0 ? paginatedData.map((row, rowIndex) => <tr key={rowIndex} className="clickable-row" onClick={handleRowClick}>
-                {columns.map(column => <td key={`${rowIndex}-${column.id}`}>
-                    {column.accessor === 'attestationStatus' ? <span className={`status-badge ${getStatusBadgeClass(row[column.accessor])}`}>
+          {paginatedData.length > 0 ? 
+            paginatedData.map((row, rowIndex) => (
+              <tr key={rowIndex} className="clickable-row" onClick={handleRowClick}>
+                {columns.map(column => (
+                  <td key={`${rowIndex}-${column.id}`}>
+                    {column.accessor === 'attestationStatus' ? (
+                      <span className={`status-badge ${getStatusBadgeClass(row[column.accessor])}`}>
                         {row[column.accessor]}
-                      </span> : column.accessor === 'acceptingPatientStatus' ? <span className={`status-badge ${getAcceptingPatientsBadgeClass(row[column.accessor])}`}>
+                      </span>
+                    ) : column.accessor === 'acceptingPatientStatus' ? (
+                      <span className={`status-badge ${getAcceptingPatientsBadgeClass(row[column.accessor])}`}>
                         {row[column.accessor]}
-                      </span> : column.accessor === 'otherPracticeStates' ? <span>{row[column.accessor].join(', ')}</span> : column.accessor === 'primaryWorkAddress' ? <span className="address-text">{row[column.accessor]}</span> : row[column.accessor]}
-                  </td>)}
-              </tr>) : <tr>
+                      </span>
+                    ) : column.accessor === 'otherPracticeStates' ? (
+                      <span>{row[column.accessor].join(', ')}</span>
+                    ) : column.accessor === 'primaryWorkAddress' ? (
+                      <span className="address-text">{row[column.accessor]}</span>
+                    ) : (
+                      row[column.accessor]
+                    )}
+                  </td>
+                ))}
+              </tr>
+            )) : (
+            <tr>
               <td colSpan={columns.length} className="no-results">
                 No results found
               </td>
-            </tr>}
+            </tr>
+          )}
         </tbody>
       </table>
       <div className="table-pagination">
@@ -279,23 +334,38 @@ export const ProviderTable = forwardRef(({
           </p>
         </div>
         <div className="pagination-controls">
-          <select className="pagination-select" value={rowsPerPage} onChange={e => {
-          setRowsPerPage(Number(e.target.value));
-          setCurrentPage(1);
-        }}>
-            {[5, 10, 20, 50].map(pageSize => <option key={pageSize} value={pageSize}>
+          <select 
+            className="pagination-select" 
+            value={rowsPerPage} 
+            onChange={(e) => {
+              setRowsPerPage(Number(e.target.value));
+              setCurrentPage(1);
+            }}
+          >
+            {[5, 10, 20, 50].map(pageSize => (
+              <option key={pageSize} value={pageSize}>
                 {pageSize} per page
-              </option>)}
+              </option>
+            ))}
           </select>
           <div className="pagination-buttons">
-            <button onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} disabled={currentPage === 1} className={`pagination-btn ${currentPage === 1 ? 'disabled' : ''}`}>
+            <button 
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} 
+              disabled={currentPage === 1} 
+              className={`pagination-btn ${currentPage === 1 ? 'disabled' : ''}`}
+            >
               &lt;
             </button>
-            <button onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages} className={`pagination-btn ${currentPage === totalPages ? 'disabled' : ''}`}>
+            <button 
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))} 
+              disabled={currentPage === totalPages} 
+              className={`pagination-btn ${currentPage === totalPages ? 'disabled' : ''}`}
+            >
               &gt;
             </button>
           </div>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 });
