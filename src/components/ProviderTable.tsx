@@ -26,6 +26,9 @@ export const ProviderTable = forwardRef(({
   // Initialize filters with empty arrays for multiselect columns
   const [filters, setFilters] = useState({});
   
+  // Add a re-render trigger to force checkbox updates
+  const [renderKey, setRenderKey] = useState(0);
+  
   // Check if column should use multiselect
   const isMultiselectColumn = columnId => {
     return ['attestationStatus', 'specialty', 'primaryPracticeState', 'otherPracticeStates', 'acceptingPatientStatus'].includes(columnId);
@@ -44,7 +47,7 @@ export const ProviderTable = forwardRef(({
     setFilters(initialFilters);
   }, [columns]); // Depend on columns to reinitialize when columns change
   
-  // Handle filter changes
+  // Handle filter changes - THE FIX IS HERE
   const handleFilterChange = (columnId, value) => {
     console.log(`🔧 Filter change: ${columnId} = ${value}`);
     
@@ -55,23 +58,27 @@ export const ProviderTable = forwardRef(({
           currentValues.filter(item => item !== value) :
           [...currentValues, value];
         
-        const newFilters = {
+        console.log(`✅ Updated multiselect filter ${columnId}:`, newValues);
+        
+        // Force re-render by updating the render key
+        setRenderKey(k => k + 1);
+        
+        return {
           ...prev,
           [columnId]: newValues
         };
-        
-        console.log(`✅ Updated multiselect filter ${columnId}:`, newValues);
-        return newFilters;
       });
     } else {
       setFilters(prev => {
-        const newFilters = {
+        console.log(`✅ Updated text filter ${columnId}:`, value);
+        
+        // Force re-render by updating the render key
+        setRenderKey(k => k + 1);
+        
+        return {
           ...prev,
           [columnId]: value
         };
-        
-        console.log(`✅ Updated text filter ${columnId}:`, value);
-        return newFilters;
       });
     }
     // Reset to first page when filters change
@@ -91,6 +98,7 @@ export const ProviderTable = forwardRef(({
     });
     setFilters(initialFilters);
     setCurrentPage(1);
+    setRenderKey(k => k + 1); // Force re-render
   };
 
   // Expose methods via ref
@@ -233,7 +241,7 @@ export const ProviderTable = forwardRef(({
                           const isChecked = filters[column.accessor]?.includes(value) || false;
                           return (
                             <div 
-                              key={`${column.accessor}-${value}`}
+                              key={`${column.accessor}-${value}-${renderKey}`}
                               className="filter-option" 
                               onClick={(e) => {
                                 e.stopPropagation();
