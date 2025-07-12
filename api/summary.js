@@ -43,7 +43,7 @@ module.exports = async function handler(req, res) {
 ORIGINAL USER QUERY: "${originalQuery}"
 
 FILTERED RESULTS (${filteredData.length} out of ${totalCount} total providers):
-${JSON.stringify(filteredData.slice(0, 5), null, 2)}
+${JSON.stringify(filteredData, null, 2)}
 ${filteredData.length > 5 ? `... and ${filteredData.length - 5} more providers` : ''}
 
 Instructions:
