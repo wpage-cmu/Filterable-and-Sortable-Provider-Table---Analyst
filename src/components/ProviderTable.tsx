@@ -51,6 +51,8 @@ export const ProviderTable = forwardRef(({
         [columnId]: value
       }));
     }
+    // Reset to first page when filters change
+    setCurrentPage(1);
   };
 
   // Expose handleFilterChange via ref
@@ -127,21 +129,7 @@ export const ProviderTable = forwardRef(({
   // Pagination
   const totalPages = Math.ceil(sortedData.length / rowsPerPage);
   const paginatedData = sortedData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
-  // Handle filter changes
-  const handleFilterChange = (columnId, value) => {
-    if (isMultiselectColumn(columnId)) {
-      setFilters(prev => ({
-        ...prev,
-        [columnId]: prev[columnId]?.includes(value) ? prev[columnId].filter(v => v !== value) : [...(prev[columnId] || []), value]
-      }));
-    } else {
-      setFilters(prev => ({
-        ...prev,
-        [columnId]: value
-      }));
-    }
-    setCurrentPage(1);
-  };
+  
   const getStatusBadgeClass = status => {
     switch (status) {
       case 'Active':
@@ -169,6 +157,7 @@ export const ProviderTable = forwardRef(({
         return 'status-default';
     }
   };
+  
   // Handle row click to redirect to Figma prototype
   const handleRowClick = () => {
     // Open in full screen mode with maximized window
@@ -202,6 +191,7 @@ export const ProviderTable = forwardRef(({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [openDropdown]);
+  
   return <div className="updates-table-wrapper">
       <table className="updates-table">
         <thead>
