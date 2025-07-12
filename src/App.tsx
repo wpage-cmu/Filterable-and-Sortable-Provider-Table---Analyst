@@ -427,7 +427,7 @@ export function App() {
       <SqlModal 
         isOpen={isSqlModalOpen}
         onClose={() => setIsSqlModalOpen(false)}
-        sqlQuery={currentSql}
+        sql={currentSql}
       />
     </div>
   );

@@ -30,13 +30,15 @@ export const generateSql = (
     conditions.push(`(\n    first_name LIKE '%${searchQuery.trim()}%'\n    OR last_name LIKE '%${searchQuery.trim()}%'\n    OR specialty LIKE '%${searchQuery.trim()}%'\n    OR primary_work_address LIKE '%${searchQuery.trim()}%'\n  )`);
   }
   
-  // Add filters
+  // Add filters - now using column mapping
   Object.entries(filters).forEach(([column, value]) => {
     if (value && Array.isArray(value) && value.length > 0) {
+      const sqlColumn = columnMapping[column] || column;
       const values = value.map(v => `'${v}'`).join(', ');
-      conditions.push(`${column} IN (${values})`);
+      conditions.push(`${sqlColumn} IN (${values})`);
     } else if (value && typeof value === 'string' && value.trim().length > 0) {
-      conditions.push(`${column} LIKE '%${value.trim()}%'`);
+      const sqlColumn = columnMapping[column] || column;
+      conditions.push(`${sqlColumn} LIKE '%${value.trim()}%'`);
     }
   });
   
@@ -45,9 +47,10 @@ export const generateSql = (
     sql += '\nWHERE ' + conditions.join('\n  AND ');
   }
   
-  // Add sorting
+  // Add sorting - now using column mapping
   if (sortConfig.key) {
-    sql += `\nORDER BY ${sortConfig.key} ${sortConfig.direction.toUpperCase()}`;
+    const sqlColumn = columnMapping[sortConfig.key] || sortConfig.key;
+    sql += `\nORDER BY ${sqlColumn} ${sortConfig.direction.toUpperCase()}`;
   }
   
   return sql;
