@@ -216,14 +216,24 @@ export function App() {
       // STEP 4: Apply filters directly to central state (no more simulation!)
       console.log('🎯 STEP 4: Applying filters to central state...');
       if (result.filters && Object.keys(result.filters).length > 0) {
-        // Merge LLM filters with current filter structure
-        const newFilters = { ...filters };
-        Object.entries(result.filters).forEach(([key, value]) => {
-          if (value !== undefined && value !== null) {
-            newFilters[key] = value;
+        // Start with fresh cleared filters structure
+        const clearedFilters = {};
+        Object.keys(filters).forEach(key => {
+          if (MULTISELECT_COLUMNS.includes(key)) {
+            clearedFilters[key] = [];
+          } else {
+            clearedFilters[key] = '';
           }
         });
-        setFilters(newFilters);
+        
+        // Apply only the new LLM filters
+        Object.entries(result.filters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            clearedFilters[key] = value;
+          }
+        });
+        
+        setFilters(clearedFilters);
         console.log('✅ STEP 4 COMPLETE: Central filter state updated');
       }
       
