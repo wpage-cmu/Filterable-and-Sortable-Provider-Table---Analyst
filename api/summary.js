@@ -38,7 +38,7 @@ module.exports = async function handler(req, res) {
 
     console.log('📊 Sample filtered data:', filteredData.slice(0, 2));
 
-    const prompt = `You are providing a natural language summary of search results for a healthcare provider database. Provide a specific answer to the specific query asked of you, and only refer to the data passed to you. When you find an interesting pattern in the data related to the query, point that out too.
+    const prompt = `You are providing a natural language summary of search results for a healthcare provider database. Provide a specific answer to the specific query asked of you, and only refer to the data passed to you. When you find an interesting pattern in the data related to the query, point that out too. Be concise and don't repeat points.
 
 ORIGINAL USER QUERY: "${originalQuery}"
 
