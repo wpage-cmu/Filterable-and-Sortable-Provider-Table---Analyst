@@ -46,18 +46,30 @@ export const ProviderTable = forwardRef(({
   
   // Handle filter changes
   const handleFilterChange = (columnId, value) => {
+    console.log('Filter change:', columnId, value, 'Current filters:', filters);
+    
     if (isMultiselectColumn(columnId)) {
-      setFilters(prev => ({
-        ...prev,
-        [columnId]: prev[columnId]?.includes(value) ?
-          prev[columnId].filter(item => item !== value) :
-          [...(prev[columnId] || []), value]
-      }));
+      setFilters(prev => {
+        const currentValues = prev[columnId] || [];
+        const newValues = currentValues.includes(value) ?
+          currentValues.filter(item => item !== value) :
+          [...currentValues, value];
+        
+        console.log('Multiselect update:', columnId, 'from:', currentValues, 'to:', newValues);
+        
+        return {
+          ...prev,
+          [columnId]: newValues
+        };
+      });
     } else {
-      setFilters(prev => ({
-        ...prev,
-        [columnId]: value
-      }));
+      setFilters(prev => {
+        console.log('Text filter update:', columnId, 'from:', prev[columnId], 'to:', value);
+        return {
+          ...prev,
+          [columnId]: value
+        };
+      });
     }
     // Reset to first page when filters change
     setCurrentPage(1);
@@ -265,9 +277,12 @@ export const ProviderTable = forwardRef(({
                             <input 
                               type="checkbox" 
                               checked={filters[column.accessor]?.includes(value) || false} 
-                              onChange={() => {}} 
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                handleFilterChange(column.accessor, value);
+                              }}
                             />
-                            <span>{value}</span>
+                            <span style={{ marginLeft: '8px', cursor: 'pointer' }}>{value}</span>
                           </div>
                         ))}
                       </div>
@@ -279,7 +294,11 @@ export const ProviderTable = forwardRef(({
                     placeholder="Filter..." 
                     className="search-input" 
                     value={filters[column.accessor] || ''} 
-                    onChange={(e) => handleFilterChange(column.accessor, e.target.value)} 
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      handleFilterChange(column.accessor, e.target.value);
+                    }}
+                    onClick={(e) => e.stopPropagation()}
                   />
                 )}
               </th>
