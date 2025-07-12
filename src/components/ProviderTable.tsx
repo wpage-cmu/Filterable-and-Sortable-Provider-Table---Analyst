@@ -102,6 +102,7 @@ export const ProviderTable = forwardRef(({
   
   // Notify parent component when filters change
   useEffect(() => {
+    console.log('Notifying parent of filter changes:', filters);
     if (onFiltersChange) {
       onFiltersChange(filters);
     }
@@ -283,7 +284,11 @@ export const ProviderTable = forwardRef(({
                           >
                             <input 
                               type="checkbox" 
-                              checked={filters[column.accessor]?.includes(value) || false} 
+                              checked={(() => {
+                                const isChecked = filters[column.accessor]?.includes(value) || false;
+                                console.log(`Checkbox for ${value}:`, isChecked, 'filters[' + column.accessor + ']:', filters[column.accessor]);
+                                return isChecked;
+                              })()} 
                               readOnly
                             />
                             <span style={{ marginLeft: '8px', cursor: 'pointer' }}>
