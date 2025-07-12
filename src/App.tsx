@@ -1,117 +1,52 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { ProviderTable } from './components/ProviderTable';
 import { ColumnSelector } from './components/ColumnSelector';
+import { TableHeader } from './components/TableHeader';
+import { mockData } from './utils/data';
+import { searchProvidersWithLLM, generateSummaryWithLLM } from './services/llmService';
 import { SqlModal } from './components/SqlModal';
-import { generateSql, hasActiveFilters } from './utils/sqlGenerator';
-import { searchProvidersWithLLM, generateSummaryWithLLM } from './utils/searchApi';
-import { Search, Database, X } from 'lucide-react';
-import './App.css';
+import { generateSql } from './utils/sqlGenerator';
+import { Lightbulb, X, Bell, HelpCircle, Settings, Loader2 } from 'lucide-react';
+import { CAQHLogo } from './components/CAQHLogo';
+import sparklesIcon from './assets/planefinder_whatsnew_sparkles_icon.png';
 
-// Mock data - replace with your actual data
-const mockData = [
-  // Your existing mock data here
-];
-
-// Column configuration
-const allColumns = [
-  { id: 'firstName', Header: 'First Name', accessor: 'firstName', isVisible: true },
-  { id: 'lastName', Header: 'Last Name', accessor: 'lastName', isVisible: true },
-  { id: 'npi', Header: 'NPI', accessor: 'npi', isVisible: true },
-  { id: 'attestationStatus', Header: 'Status', accessor: 'attestationStatus', isVisible: true },
-  { id: 'lastAttestationDate', Header: 'Last Attestation', accessor: 'lastAttestationDate', isVisible: true },
-  { id: 'specialty', Header: 'Specialty', accessor: 'specialty', isVisible: true },
-  { id: 'primaryPracticeState', Header: 'Primary State', accessor: 'primaryPracticeState', isVisible: true },
-  { id: 'otherPracticeStates', Header: 'Other States', accessor: 'otherPracticeStates', isVisible: false },
-  { id: 'acceptingPatientStatus', Header: 'Accepting Patients', accessor: 'acceptingPatientStatus', isVisible: false },
-  { id: 'primaryWorkAddress', Header: 'Address', accessor: 'primaryWorkAddress', isVisible: false }
-];
-
-function App() {
+export function App() {
   const [data] = useState(mockData);
-  const [columns, setColumns] = useState(allColumns);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResult, setSearchResult] = useState(null);
+  const [isSqlModalOpen, setIsSqlModalOpen] = useState(false);
+  const [showDemo, setShowDemo] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState('');
-  const [showDemo, setShowDemo] = useState(true);
-  const [showSqlModal, setShowSqlModal] = useState(false);
   
-  // CENTRALIZED FILTER STATE - Single source of truth
-  const [filters, setFilters] = useState({});
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
-  
-  const tableRef = useRef(null);
+  // Add ref for table to simulate filter clicks
+  const tableRef = useRef();
 
-  // Check if column should use multiselect
-  const isMultiselectColumn = (columnId) => {
-    return ['attestationStatus', 'specialty', 'primaryPracticeState', 'otherPracticeStates', 'acceptingPatientStatus'].includes(columnId);
-  };
+  // Demo suggestions for users
+  const demoQuestions = [
+    "Show me providers in California with urologist specialty",
+    "How many providers have a last attestation date of over one year ago?",
+    "Which active providers recently attested?",
+    "Find all cardiologists accepting new patients"
+  ];
 
-  // Initialize filters when columns change
-  useEffect(() => {
-    const initialFilters = {};
-    columns.forEach(column => {
-      if (isMultiselectColumn(column.accessor)) {
-        initialFilters[column.accessor] = [];
-      } else {
-        initialFilters[column.accessor] = '';
-      }
-    });
-    setFilters(initialFilters);
-  }, [columns]);
+  const [columns, setColumns] = useState([
+    { id: 'firstName', Header: 'First Name', accessor: 'firstName', width: '140', isVisible: true },
+    { id: 'lastName', Header: 'Last Name', accessor: 'lastName', width: '140', isVisible: true },
+    { id: 'npi', Header: 'NPI', accessor: 'npi', width: '120', isVisible: true },
+    { id: 'attestationStatus', Header: 'Attestation Status', accessor: 'attestationStatus', width: '140', isVisible: true },
+    { id: 'attestationDueDate', Header: 'Attestation Due Date', accessor: 'attestationDueDate', width: '140', isVisible: true },
+    { id: 'lastAttestationDate', Header: 'Last Attestation Date', accessor: 'lastAttestationDate', width: '140', isVisible: true },
+    { id: 'specialty', Header: 'Specialty', accessor: 'specialty', width: '200', isVisible: true },
+    { id: 'acceptingPatientStatus', Header: 'Accepting New Patients', accessor: 'acceptingPatientStatus', width: '140', isVisible: true },
+    { id: 'primaryWorkAddress', Header: 'Primary Work Address', accessor: 'primaryWorkAddress', width: '250', isVisible: false },
+    { id: 'primaryPracticeState', Header: 'Primary Practice State', accessor: 'primaryPracticeState', width: '140', isVisible: true },
+    { id: 'otherPracticeStates', Header: 'Other Practice States', accessor: 'otherPracticeStates', width: '160', isVisible: false }
+  ]);
 
-  // CENTRALIZED FILTER CHANGE HANDLER - Used by both manual and programmatic changes
-  const handleFilterChange = (columnId, value) => {
-    console.log(`🔧 Filter change: ${columnId} = ${value}`);
-    
-    if (isMultiselectColumn(columnId)) {
-      setFilters(prev => {
-        const currentValues = prev[columnId] || [];
-        const newValues = currentValues.includes(value) ?
-          currentValues.filter(item => item !== value) :
-          [...currentValues, value];
-        
-        const newFilters = {
-          ...prev,
-          [columnId]: newValues
-        };
-        
-        console.log(`✅ Updated multiselect filter ${columnId}:`, newValues);
-        return newFilters;
-      });
-    } else {
-      setFilters(prev => {
-        const newFilters = {
-          ...prev,
-          [columnId]: value
-        };
-        
-        console.log(`✅ Updated text filter ${columnId}:`, value);
-        return newFilters;
-      });
-    }
-  };
+  const visibleColumns = columns.filter(column => column.isVisible);
 
-  // Clear all filters function
-  const clearAllFilters = () => {
-    console.log('🧹 Clearing all filters');
-    const initialFilters = {};
-    columns.forEach(column => {
-      if (isMultiselectColumn(column.accessor)) {
-        initialFilters[column.accessor] = [];
-      } else {
-        initialFilters[column.accessor] = '';
-      }
-    });
-    setFilters(initialFilters);
-  };
-
-  // Handle sort changes
-  const handleSortChange = (newSortConfig) => {
-    setSortConfig(newSortConfig);
-  };
-
-  const toggleColumnVisibility = (columnId) => {
+  const toggleColumnVisibility = (columnId: string) => {
     setColumns(columns.map(column => 
       column.id === columnId 
         ? { ...column, isVisible: !column.isVisible }
@@ -119,7 +54,7 @@ function App() {
     ));
   };
   
-  const handleSearch = async (query) => {
+  const handleSearch = async (query: string) => {
     console.log('🎬 SEARCH FLOW STARTED');
     console.log('=' .repeat(50));
     console.log('📝 User Query:', query);
@@ -129,16 +64,21 @@ function App() {
     if (!query.trim()) {
       console.log('❌ Empty query, clearing results');
       setSearchResult(null);
-      clearAllFilters();
+      // Clear table filters when search is cleared
+      if (tableRef.current?.clearAllFilters) {
+        tableRef.current.clearAllFilters();
+      }
       return;
     }
 
     setIsSearching(true);
     
     try {
-      // Clear existing filters before new search
-      console.log('🧹 Clearing existing filters...');
-      clearAllFilters();
+      // Clear existing table filters before new search
+      console.log('🧹 Clearing existing table filters...');
+      if (tableRef.current?.clearAllFilters) {
+        tableRef.current.clearAllFilters();
+      }
       
       // STEP 1-3: Get filters from LLM
       console.log('🎯 STEP 1-3: Requesting filters from LLM...');
@@ -181,32 +121,34 @@ function App() {
       
       setSearchResult(finalResult);
       
-      // STEP 8: Apply filters to centralized state (this will update the UI automatically)
+      // STEP 8: Simulate clicking the filters that LLM returned
       if (result.filters && Object.keys(result.filters).length > 0) {
-        console.log('🎯 STEP 8: Applying filters to centralized state...');
+        console.log('🎯 STEP 8: Simulating filter clicks in UI...');
         
-        Object.entries(result.filters).forEach(([filterKey, filterValues]) => {
-          console.log(`🖱️ Applying filter: ${filterKey} = ${filterValues}`);
-          
-          if (Array.isArray(filterValues)) {
-            // For multiselect filters, apply each value
-            filterValues.forEach(value => {
-              console.log(`  ✅ Adding to multiselect: ${filterKey} = ${value}`);
-              handleFilterChange(filterKey, value);
-            });
-          } else if (filterValues && typeof filterValues === 'string') {
-            // Handle special date formats and regular strings
-            let processedValue = filterValues;
-            if (filterValues.startsWith('<') || filterValues.startsWith('>')) {
-              // For date filters, strip the operator for display
-              processedValue = filterValues.substring(1);
+        // Small delay to ensure the table has rendered
+        setTimeout(() => {
+          Object.entries(result.filters).forEach(([filterKey, filterValues]) => {
+            console.log(`🖱️ Simulating filter clicks for ${filterKey}:`, filterValues);
+            
+            if (Array.isArray(filterValues)) {
+              filterValues.forEach(value => {
+                console.log(`  ✅ Clicking filter: ${filterKey} = ${value}`);
+                tableRef.current?.handleFilterChange(filterKey, value);
+              });
+            } else if (filterValues && typeof filterValues === 'string') {
+              // Handle special date formats and regular strings
+              let processedValue = filterValues;
+              if (filterValues.startsWith('<') || filterValues.startsWith('>')) {
+                // For date filters, strip the operator for display
+                processedValue = filterValues.substring(1);
+              }
+              console.log(`  ✅ Setting filter: ${filterKey} = ${processedValue}`);
+              tableRef.current?.handleFilterChange(filterKey, processedValue);
             }
-            console.log(`  ✅ Setting text filter: ${filterKey} = ${processedValue}`);
-            handleFilterChange(filterKey, processedValue);
-          }
-        });
-        
-        console.log('✅ STEP 8 COMPLETE: Filters applied to centralized state');
+          });
+          
+          console.log('✅ STEP 8 COMPLETE: Filter UI updated');
+        }, 100);
       }
       
       console.log('✅ STEP 7 COMPLETE: UI updated');
@@ -228,12 +170,12 @@ function App() {
     }
   };
 
-  const formatResultCount = (resultCount, description = '') => {
+  const formatResultCount = (resultCount: number, description: string = '') => {
     const plural = resultCount === 1 ? 'provider' : 'providers';
     return `Found ${resultCount} ${plural} ${description}`;
   };
 
-  const handleKeyPress = (e) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleSearch(searchQuery);
     }
@@ -304,144 +246,175 @@ function App() {
     return result;
   };
   
-  const handleDemoClick = (question) => {
+  const handleDemoClick = (question: string) => {
     setSearchQuery(question);
     handleSearch(question);
     setShowDemo(false);
   };
   
-  // Use filtered data based on current filter state
-  const displayData = useMemo(() => {
-    return applyFilters(data, filters);
-  }, [data, filters]);
+  const displayData = searchResult?.filteredData || data;
+  
+  // Track current table filters for SQL generation
+  const [currentTableFilters, setCurrentTableFilters] = useState({});
+  const [currentTableSort, setCurrentTableSort] = useState({ key: null, direction: 'asc' });
   
   // Generate SQL that updates with current state
-  const currentSql = generateSql(searchQuery, filters, sortConfig);
-  const showSqlButton = hasActiveFilters(searchQuery, filters, sortConfig);
-
-  const visibleColumns = columns.filter(col => col.isVisible);
-
+  const currentSql = generateSql(searchQuery, {
+    ...searchResult?.filters,
+    ...currentTableFilters
+  }, currentTableSort);
+  
   return (
-    <div className="App">
-      <div className="main-container">
-        <header className="app-header">
-          <div className="header-content">
-            <h1 className="app-title">Provider Search</h1>
-            <p className="app-subtitle">Search and filter healthcare providers using natural language</p>
-          </div>
-        </header>
+    <div className="min-h-screen bg-gray-100">
+      {/* Top Banner */}
+      <header className="w-full bg-white flex items-center px-10 h-16 border-b border-gray-200 sticky top-0 z-50">
+        <CAQHLogo className="w-auto h-8 mr-6" />
+        <div className="portal-title text-lg font-bold text-blue-900 mr-auto font-['Volte']">
+          Provider Directory Portal
+        </div>
+        <div className="flex items-center space-x-4">
+          <Bell className="w-5 h-5 text-gray-600 cursor-pointer" />
+          <HelpCircle className="w-5 h-5 text-gray-600 cursor-pointer" />
+          <Settings className="w-5 h-5 text-gray-600 cursor-pointer" />
+        </div>
+      </header>
 
-        <div className="search-section">
-          <div className="search-container">
-            <div className="search-input-wrapper">
-              <Search className="search-icon" />
-              <input
-                type="text"
-                placeholder="Ask about providers... (e.g., 'Show me active cardiologists in California')"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={handleKeyPress}
-                className="search-input"
-              />
-              {searchQuery && (
+      {/* Main Content */}
+      <div className="px-10 py-8">
+        {/* Search Section */}
+        <div className="mb-8">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <img src={sparklesIcon} alt="AI" className="w-6 h-6" />
+              <h1 className="text-2xl font-bold text-gray-900">Ask anything about your providers</h1>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="relative">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Try: 'Show me cardiologists in California' or 'Which providers need to attest soon?'"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  disabled={isSearching}
+                />
+                {isSearching && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex justify-between items-center">
                 <button
-                  onClick={() => {
-                    setSearchQuery('');
-                    setSearchResult(null);
-                    clearAllFilters();
-                  }}
-                  className="clear-search-btn"
+                  onClick={() => handleSearch(searchQuery)}
+                  disabled={isSearching || !searchQuery.trim()}
+                  className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-medium transition-colors"
                 >
-                  <X className="w-4 h-4" />
+                  {isSearching ? 'Searching...' : 'Search'}
                 </button>
-              )}
-            </div>
-            <button
-              onClick={() => handleSearch(searchQuery)}
-              disabled={isSearching || !searchQuery.trim()}
-              className="search-btn"
-            >
-              {isSearching ? 'Searching...' : 'Search'}
-            </button>
-          </div>
-
-          {searchError && (
-            <div className="error-message">
-              {searchError}
-            </div>
-          )}
-
-          {searchResult && (
-            <div className="search-results">
-              <div className="results-summary">
-                {formatResultCount(displayData.length, searchResult.summary || '')}
+                
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowDemo(!showDemo)}
+                    className="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1"
+                  >
+                    <Lightbulb className="w-4 h-4" />
+                    <span>Try examples</span>
+                  </button>
+                </div>
+                    
+                    {showDemo && (
+                      <div className="absolute top-full right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                        <div className="p-3 border-b border-gray-200 flex justify-between items-center">
+                          <span className="font-medium text-gray-900">Example Questions</span>
+                          <button
+                            onClick={() => setShowDemo(false)}
+                            className="text-gray-400 hover:text-gray-600"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <div className="p-2">
+                          {demoQuestions.map((question, index) => (
+                            <button
+                              key={index}
+                              onClick={() => handleDemoClick(question)}
+                              className="w-full text-left p-2 hover:bg-gray-50 rounded text-sm text-gray-700 hover:text-gray-900"
+                            >
+                              {question}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
               </div>
             </div>
-          )}
+
+            {/* Search Error */}
+            {searchError && (
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-800">{searchError}</p>
+              </div>
+            )}
+
+            {/* Search Results Summary */}
+            {searchResult && (
+              <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <img src={sparklesIcon} alt="AI" className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-green-800 font-medium mb-1">Search Results</p>
+                    <p className="text-green-700">{searchResult.summary}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="controls-section">
-          <ColumnSelector 
+        {/* Table Section */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <TableHeader 
+            resultCount={displayData.length}
+            totalCount={data.length}
+            isFiltered={!!searchResult}
+            onClearFilters={() => {
+              setSearchResult(null);
+              setSearchQuery('');
+              // Clear table filters when using the TableHeader clear button
+              if (tableRef.current?.clearAllFilters) {
+                tableRef.current.clearAllFilters();
+              }
+            }}
             columns={columns}
-            toggleColumnVisibility={toggleColumnVisibility}
+            onToggleColumn={toggleColumnVisibility}
+            onOpenSqlModal={() => setIsSqlModalOpen(true)}
           />
           
-          {showSqlButton && (
-            <button
-              onClick={() => setShowSqlModal(true)}
-              className="sql-btn"
-            >
-              <Database className="w-4 h-4 mr-2" />
-              View SQL
-            </button>
-          )}
-        </div>
-
-        <div className="table-section">
-          <ProviderTable
+          <ProviderTable 
             ref={tableRef}
             data={displayData}
             columns={visibleColumns}
-            filters={filters}
-            sortConfig={sortConfig}
-            onFilterChange={handleFilterChange}
-            onSortChange={handleSortChange}
+            initialSort={searchResult?.sort}
+            onFiltersChange={(filters) => {
+              setCurrentTableFilters(filters);
+            }}
+            onSortChange={(sortConfig) => {
+              setCurrentTableSort(sortConfig);
+            }}
           />
         </div>
-
-        {showDemo && (
-          <div className="demo-overlay">
-            <div className="demo-card">
-              <h3>Try these example searches:</h3>
-              <div className="demo-questions">
-                <button onClick={() => handleDemoClick("Show me active cardiologists")}>
-                  Show me active cardiologists
-                </button>
-                <button onClick={() => handleDemoClick("Providers in California")}>
-                  Providers in California
-                </button>
-                <button onClick={() => handleDemoClick("Who hasn't attested in over a year?")}>
-                  Who hasn't attested in over a year?
-                </button>
-                <button onClick={() => handleDemoClick("Inactive providers accepting patients")}>
-                  Inactive providers accepting patients
-                </button>
-              </div>
-              <button onClick={() => setShowDemo(false)} className="demo-close">
-                Skip demo
-              </button>
-            </div>
-          </div>
-        )}
-
-        <SqlModal
-          isOpen={showSqlModal}
-          onClose={() => setShowSqlModal(false)}
-          sql={currentSql}
-        />
       </div>
+
+      {/* SQL Modal */}
+      <SqlModal 
+        isOpen={isSqlModalOpen}
+        onClose={() => setIsSqlModalOpen(false)}
+        sqlQuery={currentSql}
+      />
     </div>
   );
 }
-
-export default App;
