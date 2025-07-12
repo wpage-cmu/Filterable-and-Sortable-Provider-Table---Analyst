@@ -23,7 +23,11 @@ export const ProviderTable = ({
       setSortConfig(initialSort);
     }
   }, [initialSort]);
-
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [openDropdown, setOpenDropdown] = useState(null);
+  
   useEffect(() => {
     const handleClickOutside = event => {
       if (openDropdown && !event.target.closest('.filter-dropdown')) {
@@ -33,11 +37,7 @@ export const ProviderTable = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [openDropdown]);
-  
-  const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [openDropdown, setOpenDropdown] = useState(null);
-  
+
   // Check if column should use multiselect
   const isMultiselectColumn = columnId => {
     return MULTISELECT_COLUMNS.includes(columnId);
