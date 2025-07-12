@@ -38,7 +38,7 @@ module.exports = async function handler(req, res) {
 
     console.log('📊 Sample filtered data:', filteredData.slice(0, 2));
 
-    const prompt = `You are providing a natural language summary of search results for a healthcare provider database.
+    const prompt = `You are providing a natural language summary of search results for a healthcare provider database. Provide a specific answer to the specific query asked of you, and only refer to the data passed to you. When you find an interesting pattern in the data related to the query, point that out too.
 
 ORIGINAL USER QUERY: "${originalQuery}"
 
@@ -49,7 +49,7 @@ ${filteredData.length > 5 ? `... and ${filteredData.length - 5} more providers` 
 Instructions:
 1. Provide a natural, conversational summary of the results
 2. Include the count (${filteredData.length} providers)
-3. Mention key characteristics of the results if relevant (specialties, locations, statuses, etc.)
+3. Mention key characteristics of the results if relevant (specialties, locations, statuses, etc.) If a user asks for specific counts, give them.
 4. Be helpful and informative
 5. Use proper grammar (1 provider vs 2 providers)
 6. If the query asked "how many", lead with the count
@@ -59,7 +59,7 @@ Instructions:
 Examples:
 - "Found 3 urologists practicing in California, all with active attestation status"
 - "Found 12 providers who last attested over a year ago - they may need to renew their attestations"
-- "Found 1 cardiologist in New York with active status"
+- "The top 3 specialties are Cardiology (9), Urology (7) and Orthopedics (4)"
 
 Return only the summary text, no JSON or other formatting.`;
 
