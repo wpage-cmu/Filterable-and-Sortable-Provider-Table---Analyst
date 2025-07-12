@@ -64,12 +64,22 @@ export function App() {
     if (!query.trim()) {
       console.log('❌ Empty query, clearing results');
       setSearchResult(null);
+      // Clear table filters when search is cleared
+      if (tableRef.current?.clearAllFilters) {
+        tableRef.current.clearAllFilters();
+      }
       return;
     }
 
     setIsSearching(true);
     
     try {
+      // Clear existing table filters before new search
+      console.log('🧹 Clearing existing table filters...');
+      if (tableRef.current?.clearAllFilters) {
+        tableRef.current.clearAllFilters();
+      }
+      
       // STEP 1-3: Get filters from LLM
       console.log('🎯 STEP 1-3: Requesting filters from LLM...');
       const result = await searchProvidersWithLLM(query, data);
@@ -300,50 +310,51 @@ export function App() {
                   {isSearching ? 'Searching...' : 'Search'}
                 </button>
                 
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setShowDemo(!showDemo)}
-                    className="flex items-center gap-2 text-blue-600 hover:text-blue-700 px-3 py-2 rounded-lg hover:bg-blue-50 transition-colors"
-                  >
-                    <Lightbulb className="w-4 h-4" />
-                    Example questions
-                  </button>
-                  
+                <div className="flex items-center gap-4">
                   <button
                     onClick={() => setIsSqlModalOpen(true)}
-                    className="text-gray-600 hover:text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors text-sm"
+                    className="text-gray-600 hover:text-gray-900 text-sm flex items-center gap-1"
                   >
-                    View SQL
+                    <span>SQL</span>
                   </button>
+                  
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowDemo(!showDemo)}
+                      className="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1"
+                    >
+                      <Lightbulb className="w-4 h-4" />
+                      <span>Try examples</span>
+                    </button>
+                    
+                    {showDemo && (
+                      <div className="absolute top-full right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                        <div className="p-3 border-b border-gray-200 flex justify-between items-center">
+                          <span className="font-medium text-gray-900">Example Questions</span>
+                          <button
+                            onClick={() => setShowDemo(false)}
+                            className="text-gray-400 hover:text-gray-600"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <div className="p-2">
+                          {demoQuestions.map((question, index) => (
+                            <button
+                              key={index}
+                              onClick={() => handleDemoClick(question)}
+                              className="w-full text-left p-2 hover:bg-gray-50 rounded text-sm text-gray-700 hover:text-gray-900"
+                            >
+                              {question}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-
-            {/* Demo Questions */}
-            {showDemo && (
-              <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <div className="flex justify-between items-start mb-3">
-                  <h3 className="font-medium text-blue-900">Try these example questions:</h3>
-                  <button
-                    onClick={() => setShowDemo(false)}
-                    className="text-blue-600 hover:text-blue-800"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-                <div className="space-y-2">
-                  {demoQuestions.map((question, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleDemoClick(question)}
-                      className="block w-full text-left p-3 bg-white hover:bg-blue-50 border border-blue-200 rounded-lg text-blue-800 hover:text-blue-900 transition-colors"
-                    >
-                      {question}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {/* Search Error */}
             {searchError && (
@@ -376,6 +387,10 @@ export function App() {
             onClearFilters={() => {
               setSearchResult(null);
               setSearchQuery('');
+              // Clear table filters when using the TableHeader clear button
+              if (tableRef.current?.clearAllFilters) {
+                tableRef.current.clearAllFilters();
+              }
             }}
           />
           

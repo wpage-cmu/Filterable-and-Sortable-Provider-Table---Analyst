@@ -25,16 +25,23 @@ export const ProviderTable = forwardRef(({
   // Initialize filters with empty arrays for multiselect columns
   const [filters, setFilters] = useState({});
   
+  // Check if column should use multiselect
+  const isMultiselectColumn = columnId => {
+    return ['attestationStatus', 'specialty', 'primaryPracticeState', 'otherPracticeStates', 'acceptingPatientStatus'].includes(columnId);
+  };
+  
   // Move filter initialization to useEffect
   useEffect(() => {
     const initialFilters = {};
     columns.forEach(column => {
       if (isMultiselectColumn(column.accessor)) {
         initialFilters[column.accessor] = [];
+      } else {
+        initialFilters[column.accessor] = '';
       }
     });
     setFilters(initialFilters);
-  }, []); // Empty dependency array since we only want this to run once
+  }, [columns]); // Depend on columns to reinitialize when columns change
   
   // Handle filter changes
   const handleFilterChange = (columnId, value) => {
@@ -55,9 +62,24 @@ export const ProviderTable = forwardRef(({
     setCurrentPage(1);
   };
 
-  // Expose handleFilterChange via ref
+  // Clear all filters function
+  const clearAllFilters = () => {
+    const initialFilters = {};
+    columns.forEach(column => {
+      if (isMultiselectColumn(column.accessor)) {
+        initialFilters[column.accessor] = [];
+      } else {
+        initialFilters[column.accessor] = '';
+      }
+    });
+    setFilters(initialFilters);
+    setCurrentPage(1);
+  };
+
+  // Expose methods via ref
   useImperativeHandle(ref, () => ({
-    handleFilterChange
+    handleFilterChange,
+    clearAllFilters
   }));
   
   // Notify parent component when filters change
@@ -72,11 +94,6 @@ export const ProviderTable = forwardRef(({
   // Get unique values for dropdown filters
   const getUniqueValues = columnId => {
     return [...new Set(data.map(item => item[columnId]))].filter(Boolean);
-  };
-  
-  // Check if column should use multiselect
-  const isMultiselectColumn = columnId => {
-    return ['attestationStatus', 'specialty', 'primaryPracticeState', 'otherPracticeStates', 'acceptingPatientStatus'].includes(columnId);
   };
   
   // Apply filters to data
