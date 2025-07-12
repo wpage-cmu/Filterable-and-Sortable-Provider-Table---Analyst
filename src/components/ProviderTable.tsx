@@ -26,6 +26,9 @@ export const ProviderTable = forwardRef(({
   // Initialize filters with empty arrays for multiselect columns
   const [filters, setFilters] = useState({});
   
+  // Add a force re-render trigger
+  const [filterUpdateTrigger, setFilterUpdateTrigger] = useState(0);
+  
   // Check if column should use multiselect
   const isMultiselectColumn = columnId => {
     return ['attestationStatus', 'specialty', 'primaryPracticeState', 'otherPracticeStates', 'acceptingPatientStatus'].includes(columnId);
@@ -53,16 +56,28 @@ export const ProviderTable = forwardRef(({
           currentValues.filter(item => item !== value) :
           [...currentValues, value];
         
-        return {
+        const newFilters = {
           ...prev,
           [columnId]: newValues
         };
+        
+        // Force re-render by updating trigger
+        setFilterUpdateTrigger(t => t + 1);
+        
+        return newFilters;
       });
     } else {
-      setFilters(prev => ({
-        ...prev,
-        [columnId]: value
-      }));
+      setFilters(prev => {
+        const newFilters = {
+          ...prev,
+          [columnId]: value
+        };
+        
+        // Force re-render by updating trigger
+        setFilterUpdateTrigger(t => t + 1);
+        
+        return newFilters;
+      });
     }
     // Reset to first page when filters change
     setCurrentPage(1);
@@ -80,6 +95,7 @@ export const ProviderTable = forwardRef(({
     });
     setFilters(initialFilters);
     setCurrentPage(1);
+    setFilterUpdateTrigger(t => t + 1);
   };
 
   // Expose methods via ref
@@ -138,74 +154,34 @@ export const ProviderTable = forwardRef(({
     return sortableItems;
   }, [filteredData, sortConfig]);
   
-  const requestSort = key => {
+  // Pagination logic
+  const totalPages = Math.ceil(sortedData.length / rowsPerPage);
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const endIndex = startIndex + rowsPerPage;
+  const paginatedData = sortedData.slice(startIndex, endIndex);
+  
+  // Handle sort
+  const requestSort = (key) => {
     let direction = 'asc';
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
       direction = 'desc';
     }
-    const newSortConfig = {
-      key,
-      direction
-    };
-    setSortConfig(newSortConfig);
-    
-    // Notify parent of sort changes
+    setSortConfig({ key, direction });
     if (onSortChange) {
-      onSortChange(newSortConfig);
+      onSortChange({ key, direction });
     }
   };
   
-  // Pagination
-  const totalPages = Math.ceil(sortedData.length / rowsPerPage);
-  const paginatedData = sortedData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
-  
-  const getStatusBadgeClass = status => {
-    switch (status) {
-      case 'Active':
-        return 'status-active';
-      case 'Inactive':
-        return 'status-inactive';
-      case 'Pending':
-        return 'status-pending';
-      case 'Expired':
-        return 'status-expired';
-      default:
-        return 'status-default';
-    }
-  };
-
-  const getAcceptingPatientsBadgeClass = status => {
-    switch (status) {
-      case 'Yes':
-        return 'status-active';
-      case 'No':
-        return 'status-inactive';
-      case 'Limited':
-        return 'status-pending';
-      default:
-        return 'status-default';
-    }
-  };
-  
-  // Handle row click to redirect to Figma prototype
+  // Handle row click for opening in new tab
   const handleRowClick = () => {
-    // Open in full screen mode with maximized window
-    const newWindow = window.open(
-      'https://www.figma.com/proto/TeN9UnvECKHgym7vRT91Jo/Final-CAQH-PSV-Prototype?node-id=0-6&p=f&t=4IyqYz4va6VHvv4r-1&scaling=scale-down-width&content-scaling=fixed&page-id=0%3A1',
-      '_blank',
-      'fullscreen=yes,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no'
-    );
-    
-    // Try to maximize the window if fullscreen isn't supported
-    if (newWindow) {
-      newWindow.focus();
-      // Attempt to maximize on browsers that support it
-      try {
-        newWindow.moveTo(0, 0);
-        newWindow.resizeTo(screen.width, screen.height);
-      } catch (e) {
-        // Silently fail if browser doesn't allow window manipulation
+    try {
+      const newTab = window.open('about:blank', '_blank');
+      if (newTab) {
+        newTab.document.write('<html><body><h1>Provider Details</h1><p>Provider details would be shown here.</p></body></html>');
+        newTab.document.close();
       }
+    } catch (e) {
+      // Silently fail if browser doesn't allow window manipulation
     }
   };
 
@@ -260,7 +236,7 @@ export const ProviderTable = forwardRef(({
                       <div className="filter-popup active">
                         {getUniqueValues(column.accessor).map(value => (
                           <div 
-                            key={value} 
+                            key={`${column.accessor}-${value}-${filterUpdateTrigger}`}
                             className="filter-option" 
                             onClick={(e) => {
                               e.stopPropagation();
@@ -311,10 +287,8 @@ export const ProviderTable = forwardRef(({
                       <span className={`status-badge ${getAcceptingPatientsBadgeClass(row[column.accessor])}`}>
                         {row[column.accessor]}
                       </span>
-                    ) : column.accessor === 'otherPracticeStates' ? (
-                      <span>{row[column.accessor].join(', ')}</span>
-                    ) : column.accessor === 'primaryWorkAddress' ? (
-                      <span className="address-text">{row[column.accessor]}</span>
+                    ) : Array.isArray(row[column.accessor]) ? (
+                      row[column.accessor].join(', ')
                     ) : (
                       row[column.accessor]
                     )}
@@ -322,61 +296,63 @@ export const ProviderTable = forwardRef(({
                 ))}
               </tr>
             )) : (
-            <tr>
-              <td colSpan={columns.length} className="no-results">
-                No results found
-              </td>
-            </tr>
-          )}
+              <tr>
+                <td colSpan={columns.length} className="no-results">
+                  No results found
+                </td>
+              </tr>
+            )
+          }
         </tbody>
       </table>
-      <div className="table-pagination">
-        <div className="pagination-info">
-          <p>
-            Showing{' '}
-            <span className="pagination-numbers">
-              {Math.min((currentPage - 1) * rowsPerPage + 1, sortedData.length)}
-            </span>{' '}
-            -{' '}
-            <span className="pagination-numbers">
-              {Math.min(currentPage * rowsPerPage, sortedData.length)}
-            </span>{' '}
-            of <span className="pagination-numbers">{sortedData.length}</span> results
-          </p>
-        </div>
+      
+      {/* Pagination controls */}
+      {totalPages > 1 && (
         <div className="pagination-controls">
-          <select 
-            className="pagination-select" 
-            value={rowsPerPage} 
-            onChange={(e) => {
-              setRowsPerPage(Number(e.target.value));
-              setCurrentPage(1);
-            }}
-          >
-            {[5, 10, 20, 50].map(pageSize => (
-              <option key={pageSize} value={pageSize}>
-                {pageSize} per page
-              </option>
-            ))}
-          </select>
+          <div className="pagination-info">
+            Showing {startIndex + 1}-{Math.min(endIndex, sortedData.length)} of {sortedData.length} results
+          </div>
           <div className="pagination-buttons">
             <button 
-              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} 
-              disabled={currentPage === 1} 
-              className={`pagination-btn ${currentPage === 1 ? 'disabled' : ''}`}
+              onClick={() => setCurrentPage(page => Math.max(1, page - 1))}
+              disabled={currentPage === 1}
+              className="pagination-btn"
             >
-              &lt;
+              Previous
             </button>
+            <span className="page-info">
+              Page {currentPage} of {totalPages}
+            </span>
             <button 
-              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))} 
-              disabled={currentPage === totalPages} 
-              className={`pagination-btn ${currentPage === totalPages ? 'disabled' : ''}`}
+              onClick={() => setCurrentPage(page => Math.min(totalPages, page + 1))}
+              disabled={currentPage === totalPages}
+              className="pagination-btn"
             >
-              &gt;
+              Next
             </button>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
+  
+  // Helper functions for badge classes
+  function getStatusBadgeClass(status) {
+    switch (status?.toLowerCase()) {
+      case 'active': return 'status-active';
+      case 'inactive': return 'status-inactive';
+      case 'pending': return 'status-pending';
+      case 'expired': return 'status-expired';
+      default: return 'status-default';
+    }
+  }
+  
+  function getAcceptingPatientsBadgeClass(status) {
+    switch (status?.toLowerCase()) {
+      case 'yes': return 'status-active';
+      case 'no': return 'status-inactive';
+      case 'limited': return 'status-pending';
+      default: return 'status-default';
+    }
+  }
 });
