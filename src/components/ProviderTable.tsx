@@ -46,7 +46,7 @@ export const ProviderTable = forwardRef(({
   
   // Handle filter changes
   const handleFilterChange = (columnId, value) => {
-    console.log('Filter change:', columnId, value, 'Current filters:', filters);
+    console.log('Filter change:', columnId, value);
     
     if (isMultiselectColumn(columnId)) {
       setFilters(prev => {
@@ -57,18 +57,23 @@ export const ProviderTable = forwardRef(({
         
         console.log('Multiselect update:', columnId, 'from:', currentValues, 'to:', newValues);
         
-        return {
+        const newState = {
           ...prev,
           [columnId]: newValues
         };
+        
+        console.log('New filter state:', newState);
+        return newState;
       });
     } else {
       setFilters(prev => {
         console.log('Text filter update:', columnId, 'from:', prev[columnId], 'to:', value);
-        return {
+        const newState = {
           ...prev,
           [columnId]: value
         };
+        console.log('New filter state:', newState);
+        return newState;
       });
     }
     // Reset to first page when filters change
@@ -220,7 +225,9 @@ export const ProviderTable = forwardRef(({
   useEffect(() => {
     const handleClickOutside = event => {
       const target = event.target as HTMLElement;
+      // Only close dropdown if clicking outside, don't trigger filter changes
       if (openDropdown && !target.closest('.filter-dropdown')) {
+        console.log('Clicking outside dropdown, closing dropdown only');
         setOpenDropdown(null);
       }
     };
@@ -258,7 +265,7 @@ export const ProviderTable = forwardRef(({
                       onClick={() => setOpenDropdown(openDropdown === column.accessor ? null : column.accessor)} 
                       className="filter-btn"
                     >
-                      {filters[column.accessor]?.length > 0 ? 
+                      {(filters[column.accessor] && filters[column.accessor].length > 0) ? 
                         `${filters[column.accessor].length} selected` : 
                         'Filter...'
                       }
@@ -277,12 +284,11 @@ export const ProviderTable = forwardRef(({
                             <input 
                               type="checkbox" 
                               checked={filters[column.accessor]?.includes(value) || false} 
-                              onChange={(e) => {
-                                e.stopPropagation();
-                                handleFilterChange(column.accessor, value);
-                              }}
+                              readOnly
                             />
-                            <span style={{ marginLeft: '8px', cursor: 'pointer' }}>{value}</span>
+                            <span style={{ marginLeft: '8px', cursor: 'pointer' }}>
+                              {value}
+                            </span>
                           </div>
                         ))}
                       </div>
