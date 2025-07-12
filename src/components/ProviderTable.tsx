@@ -156,67 +156,49 @@ export const ProviderTable = forwardRef(({
     }
     return sortableItems;
   }, [filteredData, sortConfig]);
-  
-  // Pagination logic
-  const totalPages = Math.ceil(sortedData.length / rowsPerPage);
-  const startIndex = (currentPage - 1) * rowsPerPage;
-  const endIndex = startIndex + rowsPerPage;
-  const paginatedData = sortedData.slice(startIndex, endIndex);
-  
-  // Handle sort
-  const requestSort = (key) => {
+
+  // Handle sorting
+  const handleSort = (key) => {
     let direction = 'asc';
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
       direction = 'desc';
     }
-    setSortConfig({ key, direction });
+    const newSortConfig = { key, direction };
+    setSortConfig(newSortConfig);
+    
     if (onSortChange) {
-      onSortChange({ key, direction });
-    }
-  };
-  
-  // Handle row click for opening in new tab
-  const handleRowClick = () => {
-    try {
-      const newTab = window.open('about:blank', '_blank');
-      if (newTab) {
-        newTab.document.write('<html><body><h1>Provider Details</h1><p>Provider details would be shown here.</p></body></html>');
-        newTab.document.close();
-      }
-    } catch (e) {
-      // Silently fail if browser doesn't allow window manipulation
+      onSortChange(newSortConfig);
     }
   };
 
-  // Add click outside handler with specific target checking
-  useEffect(() => {
-    const handleClickOutside = event => {
-      const target = event.target;
-      if (openDropdown && !target.closest('.filter-dropdown')) {
-        setOpenDropdown(null);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [openDropdown]);
-  
+  // Pagination
+  const totalPages = Math.ceil(sortedData.length / rowsPerPage);
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const paginatedData = sortedData.slice(startIndex, startIndex + rowsPerPage);
+
+  // Handle row clicks (if needed)
+  const handleRowClick = (e) => {
+    // Implement row click logic if needed
+  };
+
   return (
-    <div className="updates-table-wrapper">
+    <div>
       <table className="updates-table">
         <thead>
           <tr>
             {columns.map(column => (
-              <th key={column.id} className="sortable" onClick={() => requestSort(column.accessor)}>
-                <div className="th-content">
-                  <span>{column.Header}</span>
-                  <span className="sort-icon-container">
-                    {sortConfig.key === column.accessor ? 
+              <th key={column.id} onClick={() => handleSort(column.accessor)} style={{ cursor: 'pointer' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span>{column.header}</span>
+                  <div className="sort-icon-container">
+                    {sortConfig.key === column.accessor ? (
                       sortConfig.direction === 'asc' ? 
                         <ChevronUpIcon className="sort-icon" /> : 
-                        <ChevronDownIcon className="sort-icon" /> : 
-                      <div className="sort-icon-placeholder"></div>
-                    }
-                  </span>
+                        <ChevronDownIcon className="sort-icon" />
+                    ) : (
+                      <div className="sort-icon-placeholder" />
+                    )}
+                  </div>
                 </div>
               </th>
             ))}
@@ -238,20 +220,19 @@ export const ProviderTable = forwardRef(({
                     {openDropdown === column.accessor && (
                       <div className="filter-popup active">
                         {getUniqueValues(column.accessor).map(value => {
-                          const isChecked = filters[column.accessor]?.includes(value) || false;
                           return (
                             <div 
                               key={`${column.accessor}-${value}-${renderKey}`}
                               className="filter-option" 
                               onClick={(e) => {
                                 e.stopPropagation();
-                                console.log(`🖱️ Checkbox clicked: ${column.accessor} = ${value}, currently checked: ${isChecked}`);
+                                console.log(`🖱️ Checkbox clicked: ${column.accessor} = ${value}, currently checked: ${filters[column.accessor]?.includes(value) || false}`);
                                 handleFilterChange(column.accessor, value);
                               }}
                             >
                               <input 
                                 type="checkbox" 
-                                checked={isChecked}
+                                checked={filters[column.accessor]?.includes(value) || false}
                                 readOnly
                               />
                               <span style={{ marginLeft: '8px', cursor: 'pointer' }}>
@@ -287,19 +268,14 @@ export const ProviderTable = forwardRef(({
               <tr key={rowIndex} className="clickable-row" onClick={handleRowClick}>
                 {columns.map(column => (
                   <td key={`${rowIndex}-${column.id}`}>
-                    {column.accessor === 'attestationStatus' ? (
-                      <span className={`status-badge ${getStatusBadgeClass(row[column.accessor])}`}>
+                    {column.accessor === 'attestationStatus' ?
+                      <span className={`status-badge status-${row[column.accessor]?.toLowerCase() || 'default'}`}>
                         {row[column.accessor]}
                       </span>
-                    ) : column.accessor === 'acceptingPatientStatus' ? (
-                      <span className={`status-badge ${getAcceptingPatientsBadgeClass(row[column.accessor])}`}>
-                        {row[column.accessor]}
-                      </span>
-                    ) : Array.isArray(row[column.accessor]) ? (
-                      row[column.accessor].join(', ')
-                    ) : (
-                      row[column.accessor]
-                    )}
+                      : Array.isArray(row[column.accessor]) ? 
+                        row[column.accessor].join(', ') : 
+                        row[column.accessor]
+                    }
                   </td>
                 ))}
               </tr>
@@ -314,27 +290,35 @@ export const ProviderTable = forwardRef(({
         </tbody>
       </table>
       
-      {/* Pagination controls */}
+      {/* Pagination */}
       {totalPages > 1 && (
-        <div className="pagination-controls">
-          <div className="pagination-info">
-            Showing {startIndex + 1}-{Math.min(endIndex, sortedData.length)} of {sortedData.length} results
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
+          <div>
+            <label>
+              Rows per page: 
+              <select value={rowsPerPage} onChange={(e) => {
+                setRowsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}>
+                <option value={10}>10</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+              </select>
+            </label>
           </div>
-          <div className="pagination-buttons">
+          <div>
             <button 
-              onClick={() => setCurrentPage(page => Math.max(1, page - 1))}
+              onClick={() => setCurrentPage(currentPage - 1)} 
               disabled={currentPage === 1}
-              className="pagination-btn"
             >
               Previous
             </button>
-            <span className="page-info">
+            <span style={{ margin: '0 16px' }}>
               Page {currentPage} of {totalPages}
             </span>
             <button 
-              onClick={() => setCurrentPage(page => Math.min(totalPages, page + 1))}
+              onClick={() => setCurrentPage(currentPage + 1)} 
               disabled={currentPage === totalPages}
-              className="pagination-btn"
             >
               Next
             </button>
@@ -343,24 +327,4 @@ export const ProviderTable = forwardRef(({
       )}
     </div>
   );
-  
-  // Helper functions for badge classes
-  function getStatusBadgeClass(status) {
-    switch (status?.toLowerCase()) {
-      case 'active': return 'status-active';
-      case 'inactive': return 'status-inactive';
-      case 'pending': return 'status-pending';
-      case 'expired': return 'status-expired';
-      default: return 'status-default';
-    }
-  }
-  
-  function getAcceptingPatientsBadgeClass(status) {
-    switch (status?.toLowerCase()) {
-      case 'yes': return 'status-active';
-      case 'no': return 'status-inactive';
-      case 'limited': return 'status-pending';
-      default: return 'status-default';
-    }
-  }
 });
