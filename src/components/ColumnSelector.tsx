@@ -52,7 +52,7 @@ export const ColumnSelector = ({
                   )}
                 </div>
                 <span className={`flex-1 ${column.isVisible ? 'font-medium' : ''}`}>
-                  {column.Header}
+                  {column.header}
                 </span>
                 {column.isAlwaysVisible && (
                   <span className="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded-full">

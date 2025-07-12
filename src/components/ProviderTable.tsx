@@ -23,6 +23,16 @@ export const ProviderTable = ({
       setSortConfig(initialSort);
     }
   }, [initialSort]);
+
+  useEffect(() => {
+    const handleClickOutside = event => {
+      if (openDropdown && !event.target.closest('.filter-dropdown')) {
+        setOpenDropdown(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [openDropdown]);
   
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
