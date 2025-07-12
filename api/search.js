@@ -1,29 +1,42 @@
 const Anthropic = require('@anthropic-ai/sdk');
 
+export const config = {
+  runtime: 'nodejs',
+  maxDuration: 30,
+};
+
 const anthropic = new Anthropic({
   apiKey: process.env.CLAUDE_API_KEY,
 });
 
-export const config = {
-    runtime: 'nodejs',
-    maxDuration: 30,
-  };
-  
-  // Rest of your existing code...
-
 module.exports = async function handler(req, res) {
-  // Only allow POST requests
+  console.log('🚀 SEARCH API: Handler called');
+  console.log('=' .repeat(40));
+  console.log('📊 Request method:', req.method);
+  console.log('🔑 API key exists:', !!process.env.CLAUDE_API_KEY);
+  console.log('🔑 API key length:', process.env.CLAUDE_API_KEY?.length || 0);
+  
   if (req.method !== 'POST') {
+    console.log('❌ SEARCH API: Method not allowed');
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
     const { query, sampleData, availableSpecialties, availableStates, totalRecords } = req.body;
+    
+    console.log('📝 SEARCH API: Request data received');
+    console.log('📋 Query:', query);
+    console.log('📊 Sample data count:', sampleData?.length);
+    console.log('📊 Available specialties:', availableSpecialties?.length);
+    console.log('📊 Available states:', availableStates?.length);
+    console.log('📊 Total records:', totalRecords);
 
     const currentDate = new Date().toISOString().split('T')[0];
     const oneYearAgo = new Date();
     oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
     const oneYearAgoDate = oneYearAgo.toISOString().split('T')[0];
+
+    console.log('📅 Date context prepared:', { currentDate, oneYearAgoDate });
 
     const prompt = `You are helping users search through a healthcare provider database. 
 
@@ -75,6 +88,9 @@ Return ONLY valid JSON with this structure:
   "showAll": false
 }`;
 
+    console.log('🤖 SEARCH API: Calling Anthropic...');
+    console.log('📝 Prompt length:', prompt.length);
+
     const response = await anthropic.messages.create({
       model: 'claude-3-5-sonnet-20241022',
       max_tokens: 1500,
@@ -84,22 +100,33 @@ Return ONLY valid JSON with this structure:
       }]
     });
 
+    console.log('✅ SEARCH API: Anthropic responded');
+    console.log('📊 Response type:', response.content[0].type);
+
     const content = response.content[0];
     if (content.type !== 'text') {
       throw new Error('Unexpected response type from Claude');
     }
 
+    console.log('📝 Raw Anthropic response:', content.text);
+
     const result = JSON.parse(content.text);
+    
+    console.log('✅ SEARCH API: JSON parsed successfully');
+    console.log('🔍 Parsed filters:', result.filters);
     
     // Process date filters
     if (result.filters.lastAttestationDate) {
+      console.log('📅 Processing date filter:', result.filters.lastAttestationDate);
       const dateFilter = result.filters.lastAttestationDate;
       if (dateFilter.startsWith('before_')) {
         const beforeDate = dateFilter.replace('before_', '');
         result.filters.lastAttestationDate = `<${beforeDate}`;
+        console.log('📅 Converted to:', result.filters.lastAttestationDate);
       } else if (dateFilter.startsWith('after_')) {
         const afterDate = dateFilter.replace('after_', '');
         result.filters.lastAttestationDate = `>${afterDate}`;
+        console.log('📅 Converted to:', result.filters.lastAttestationDate);
       }
     }
     
@@ -108,16 +135,29 @@ Return ONLY valid JSON with this structure:
       throw new Error('Invalid response: missing summary');
     }
 
+    console.log('✅ SEARCH API: Validation complete');
+    console.log('📦 Final result:', result);
+    console.log('=' .repeat(40));
+
     res.status(200).json(result);
   } catch (error) {
-    console.error('Search API Error:', error);
+    console.error('❌ SEARCH API: Error occurred');
+    console.error('Error details:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack?.substring(0, 500) // Truncate stack trace
+    });
+    console.log('=' .repeat(40));
     
     // Fallback response
-    res.status(200).json({
+    const fallbackResult = {
       filters: {},
       summary: `Sorry, I couldn't process that query. Please try rephrasing your question.`,
       showAll: true,
       relevantColumns: ['firstName', 'lastName', 'npi']
-    });
+    };
+    
+    console.log('🔄 Sending fallback result:', fallbackResult);
+    res.status(200).json(fallbackResult);
   }
 }

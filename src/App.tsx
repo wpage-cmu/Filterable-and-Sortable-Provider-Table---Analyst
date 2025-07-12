@@ -114,10 +114,16 @@ export function App() {
     } : column));
   };
   
+  // Add this to your App.tsx handleSearch function
   const handleSearch = async (query: string) => {
+    console.log('🎬 SEARCH FLOW STARTED');
+    console.log('=' .repeat(50));
+    console.log('📝 User Query:', query);
+    
     setSearchError('');
     
     if (!query.trim()) {
+      console.log('❌ Empty query, clearing results');
       setSearchResult(null);
       return;
     }
@@ -125,22 +131,60 @@ export function App() {
     setIsSearching(true);
     
     try {
-      // Step 1: Get filters from LLM
+      // STEP 1-3: Get filters from LLM
+      console.log('🎯 STEP 1-3: Requesting filters from LLM...');
       const result = await searchProvidersWithLLM(query, data);
       
-      // Step 2: Apply filters to get actual filtered data
+      console.log('✅ STEP 3 COMPLETE: Filters received from LLM');
+      console.log('🔍 Filters to apply:', result.filters);
+      
+      // STEP 4: Apply filters to get actual filtered data
+      console.log('🎯 STEP 4: Applying filters to data...');
+      console.log('📊 Original data count:', data.length);
+      
       const filteredData = applyFilters(data, result.filters);
       
-      // Step 3: Generate natural summary with LLM using actual filtered data
+      console.log('✅ STEP 4 COMPLETE: Data filtered');
+      console.log('📊 Filtered data count:', filteredData.length);
+      console.log('📋 Sample filtered data:', filteredData.slice(0, 2));
+      
+      // STEP 5-6: Generate natural summary with LLM using actual filtered data
+      console.log('🎯 STEP 5-6: Generating summary...');
       const naturalSummary = await generateSummaryWithLLM(query, filteredData, data.length);
       
-      setSearchResult({
+      console.log('✅ STEP 6 COMPLETE: Summary generated');
+      console.log('📝 Final summary:', naturalSummary);
+      
+      // STEP 7: Update UI state
+      console.log('🎯 STEP 7: Updating UI state...');
+      const finalResult = {
         ...result,
         filteredData,
         summary: naturalSummary
+      };
+      
+      console.log('📦 Final search result:', {
+        filtersApplied: Object.keys(result.filters).length > 0,
+        dataCount: filteredData.length,
+        summary: naturalSummary,
+        relevantColumns: result.relevantColumns
       });
+      
+      setSearchResult(finalResult);
+      
+      console.log('✅ STEP 7 COMPLETE: UI updated');
+      console.log('🎬 SEARCH FLOW COMPLETED SUCCESSFULLY');
+      console.log('=' .repeat(50));
+      
     } catch (error) {
-      console.error('Search error:', error);
+      console.error('❌ SEARCH FLOW FAILED');
+      console.error('Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
+      console.log('=' .repeat(50));
+      
       setSearchError('Failed to process your search. Please try again.');
       setSearchResult(null);
     } finally {
@@ -197,13 +241,18 @@ export function App() {
     }
   };
   
-  // Helper function to apply filters to data
+  // Also add detailed logging to applyFilters
   const applyFilters = (data, filters) => {
+    console.log('🔧 APPLY FILTERS: Starting filter application');
+    console.log('📊 Input data count:', data.length);
+    console.log('🔍 Filters to apply:', filters);
+    
     if (!filters || Object.keys(filters).length === 0) {
+      console.log('⚠️  No filters provided, returning all data');
       return data;
     }
     
-    return data.filter(item => {
+    const result = data.filter(item => {
       return Object.entries(filters).every(([key, value]) => {
         if (!value || (Array.isArray(value) && value.length === 0)) {
           return true;
@@ -214,10 +263,14 @@ export function App() {
           const itemDate = new Date(item[key]);
           if (value.startsWith('<')) {
             const compareDate = new Date(value.substring(1));
-            return itemDate < compareDate;
+            const matches = itemDate < compareDate;
+            console.log(`📅 Date filter ${key}: ${item[key]} < ${value.substring(1)} = ${matches}`);
+            return matches;
           } else if (value.startsWith('>')) {
             const compareDate = new Date(value.substring(1));
-            return itemDate > compareDate;
+            const matches = itemDate > compareDate;
+            console.log(`📅 Date filter ${key}: ${item[key]} > ${value.substring(1)} = ${matches}`);
+            return matches;
           }
           return item[key] === value;
         }
@@ -225,19 +278,32 @@ export function App() {
         if (Array.isArray(value)) {
           // Handle array filters
           if (key === 'otherPracticeStates' && Array.isArray(item[key])) {
-            return item[key].some(state => value.includes(state));
+            const matches = item[key].some(state => value.includes(state));
+            console.log(`🔍 Array filter ${key}: ${item[key]} intersects ${value} = ${matches}`);
+            return matches;
           }
-          return value.includes(item[key]);
+          const matches = value.includes(item[key]);
+          console.log(`🔍 Array filter ${key}: ${item[key]} in ${value} = ${matches}`);
+          return matches;
         }
         
         if (typeof value === 'string') {
           // Handle string filters (like names, NPI)
-          return item[key]?.toString().toLowerCase().includes(value.toLowerCase());
+          const matches = item[key]?.toString().toLowerCase().includes(value.toLowerCase());
+          console.log(`🔍 String filter ${key}: "${item[key]}" contains "${value}" = ${matches}`);
+          return matches;
         }
         
-        return item[key] === value;
+        const matches = item[key] === value;
+        console.log(`🔍 Exact filter ${key}: ${item[key]} === ${value} = ${matches}`);
+        return matches;
       });
     });
+    
+    console.log('✅ APPLY FILTERS: Complete');
+    console.log('📊 Output data count:', result.length);
+    
+    return result;
   };
   
   const handleDemoClick = (question: string) => {
