@@ -46,8 +46,6 @@ export const ProviderTable = forwardRef(({
   
   // Handle filter changes
   const handleFilterChange = (columnId, value) => {
-    console.log('Filter change:', columnId, value);
-    
     if (isMultiselectColumn(columnId)) {
       setFilters(prev => {
         const currentValues = prev[columnId] || [];
@@ -55,26 +53,16 @@ export const ProviderTable = forwardRef(({
           currentValues.filter(item => item !== value) :
           [...currentValues, value];
         
-        console.log('Multiselect update:', columnId, 'from:', currentValues, 'to:', newValues);
-        
-        const newState = {
+        return {
           ...prev,
           [columnId]: newValues
         };
-        
-        console.log('New filter state:', newState);
-        return newState;
       });
     } else {
-      setFilters(prev => {
-        console.log('Text filter update:', columnId, 'from:', prev[columnId], 'to:', value);
-        const newState = {
-          ...prev,
-          [columnId]: value
-        };
-        console.log('New filter state:', newState);
-        return newState;
-      });
+      setFilters(prev => ({
+        ...prev,
+        [columnId]: value
+      }));
     }
     // Reset to first page when filters change
     setCurrentPage(1);
@@ -102,7 +90,6 @@ export const ProviderTable = forwardRef(({
   
   // Notify parent component when filters change
   useEffect(() => {
-    console.log('Notifying parent of filter changes:', filters);
     if (onFiltersChange) {
       onFiltersChange(filters);
     }
@@ -226,9 +213,7 @@ export const ProviderTable = forwardRef(({
   useEffect(() => {
     const handleClickOutside = event => {
       const target = event.target as HTMLElement;
-      // Only close dropdown if clicking outside, don't trigger filter changes
       if (openDropdown && !target.closest('.filter-dropdown')) {
-        console.log('Clicking outside dropdown, closing dropdown only');
         setOpenDropdown(null);
       }
     };
@@ -284,11 +269,7 @@ export const ProviderTable = forwardRef(({
                           >
                             <input 
                               type="checkbox" 
-                              checked={(() => {
-                                const isChecked = filters[column.accessor]?.includes(value) || false;
-                                console.log(`Checkbox for ${value}:`, isChecked, 'filters[' + column.accessor + ']:', filters[column.accessor]);
-                                return isChecked;
-                              })()} 
+                              checked={filters[column.accessor]?.includes(value) || false} 
                               readOnly
                             />
                             <span style={{ marginLeft: '8px', cursor: 'pointer' }}>
