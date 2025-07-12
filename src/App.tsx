@@ -6,7 +6,6 @@ import { generateSql, hasActiveFilters } from './utils/sqlGenerator';
 import { searchProvidersWithLLM, generateSummaryWithLLM } from './services/llmService';
 import { mockData } from './utils/data';
 import { Search, Database, X } from 'lucide-react';
-import './App.css';
 
 // Mock data - replace with your actual data
 const mockDataFallback = [
