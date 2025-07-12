@@ -290,7 +290,6 @@ export function App() {
       <header className="w-full bg-white flex items-center px-10 h-16 border-b border-gray-200 sticky top-0 z-50">
         <CAQHLogo className="w-auto h-8 mr-6" />
         <div className="portal-title text-lg font-bold text-blue-900 mr-auto font-['Volte']">
-          Provider Directory Portal
         </div>
         <div className="flex items-center space-x-4">
           <Bell className="w-5 h-5 text-gray-600 cursor-pointer" />
