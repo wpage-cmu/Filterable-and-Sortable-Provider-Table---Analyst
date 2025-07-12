@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { ProviderTable } from './components/ProviderTable';
 import { ColumnSelector } from './components/ColumnSelector';
 import { TableHeader } from './components/TableHeader';
@@ -18,103 +18,42 @@ export function App() {
   const [showDemo, setShowDemo] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState('');
+  
+  // Add ref for table to simulate filter clicks
+  const tableRef = useRef();
 
   // Demo suggestions for users
   const demoQuestions = [
     "Show me providers in California with urologist specialty",
     "How many providers have a last attestation date of over one year ago?",
     "Which active providers recently attested?",
-    "Find all cardiologists in New York"
+    "Find all cardiologists accepting new patients"
   ];
 
-  // Modified allColumns with new order and new columns
-  const allColumns = [{
-    id: 'npi',
-    Header: 'NPI',
-    accessor: 'npi',
-    isVisible: true,
-    isAlwaysVisible: true
-  }, {
-    id: 'firstName',
-    Header: 'Provider First Name',
-    accessor: 'firstName',
-    isVisible: true,
-    isAlwaysVisible: true
-  }, {
-    id: 'lastName',
-    Header: 'Provider Last Name',
-    accessor: 'lastName',
-    isVisible: true,
-    isAlwaysVisible: true
-  }, {
-    id: 'attestationStatus',
-    Header: 'Attestation Status',
-    accessor: 'attestationStatus',
-    isVisible: false,
-    isAlwaysVisible: false
-  }, {
-    id: 'attestationDueDate',
-    Header: 'Attestation Due Date',
-    accessor: 'attestationDueDate',
-    isVisible: false,
-    isAlwaysVisible: false
-  }, {
-    id: 'lastAttestationDate',
-    Header: 'Last Attestation Date',
-    accessor: 'lastAttestationDate',
-    isVisible: false,
-    isAlwaysVisible: false
-  }, {
-    id: 'specialty',
-    Header: 'Specialty',
-    accessor: 'specialty',
-    isVisible: false,
-    isAlwaysVisible: false
-  }, {
-    id: 'acceptingPatientStatus',
-    Header: 'Accepting Patient Status',
-    accessor: 'acceptingPatientStatus',
-    isVisible: false,
-    isAlwaysVisible: false
-  }, {
-    id: 'primaryWorkAddress',
-    Header: 'Primary Work Address',
-    accessor: 'primaryWorkAddress',
-    isVisible: false,
-    isAlwaysVisible: false
-  }, {
-    id: 'primaryPracticeState',
-    Header: 'Primary Practice State',
-    accessor: 'primaryPracticeState',
-    isVisible: false,
-    isAlwaysVisible: false
-  }, {
-    id: 'otherPracticeStates',
-    Header: 'Other Practice State(s)',
-    accessor: 'otherPracticeStates',
-    isVisible: false,
-    isAlwaysVisible: false
-  }];
-  const [visibleColumns, setVisibleColumns] = useState(allColumns);
-  
-  // Update column visibility based on search results
-  useEffect(() => {
-    if (searchResult && searchResult.relevantColumns) {
-      setVisibleColumns(visibleColumns.map(column => ({
-        ...column,
-        isVisible: column.isAlwaysVisible || searchResult.relevantColumns?.includes(column.accessor) || false
-      })));
-    }
-  }, [searchResult]);
-  
-  const toggleColumnVisibility = columnId => {
-    setVisibleColumns(visibleColumns.map(column => column.id === columnId ? {
-      ...column,
-      isVisible: !column.isVisible
-    } : column));
+  const [columns, setColumns] = useState([
+    { id: 'firstName', header: 'First Name', accessor: 'firstName', width: '140', isVisible: true },
+    { id: 'lastName', header: 'Last Name', accessor: 'lastName', width: '140', isVisible: true },
+    { id: 'npi', header: 'NPI', accessor: 'npi', width: '120', isVisible: true },
+    { id: 'attestationStatus', header: 'Attestation Status', accessor: 'attestationStatus', width: '140', isVisible: true },
+    { id: 'attestationDueDate', header: 'Attestation Due Date', accessor: 'attestationDueDate', width: '140', isVisible: true },
+    { id: 'lastAttestationDate', header: 'Last Attestation Date', accessor: 'lastAttestationDate', width: '140', isVisible: true },
+    { id: 'specialty', header: 'Specialty', accessor: 'specialty', width: '200', isVisible: true },
+    { id: 'acceptingPatientStatus', header: 'Accepting New Patients', accessor: 'acceptingPatientStatus', width: '140', isVisible: true },
+    { id: 'primaryWorkAddress', header: 'Primary Work Address', accessor: 'primaryWorkAddress', width: '250', isVisible: false },
+    { id: 'primaryPracticeState', header: 'Primary Practice State', accessor: 'primaryPracticeState', width: '140', isVisible: true },
+    { id: 'otherPracticeStates', header: 'Other Practice States', accessor: 'otherPracticeStates', width: '160', isVisible: false }
+  ]);
+
+  const visibleColumns = columns.filter(column => column.isVisible);
+
+  const toggleColumnVisibility = (columnId: string) => {
+    setColumns(columns.map(column => 
+      column.id === columnId 
+        ? { ...column, isVisible: !column.isVisible }
+        : column
+    ));
   };
   
-  // Add this to your App.tsx handleSearch function
   const handleSearch = async (query: string) => {
     console.log('🎬 SEARCH FLOW STARTED');
     console.log('=' .repeat(50));
@@ -172,6 +111,36 @@ export function App() {
       
       setSearchResult(finalResult);
       
+      // STEP 8: Simulate clicking the filters that LLM returned
+      if (result.filters && Object.keys(result.filters).length > 0) {
+        console.log('🎯 STEP 8: Simulating filter clicks in UI...');
+        
+        // Small delay to ensure the table has rendered
+        setTimeout(() => {
+          Object.entries(result.filters).forEach(([filterKey, filterValues]) => {
+            console.log(`🖱️ Simulating filter clicks for ${filterKey}:`, filterValues);
+            
+            if (Array.isArray(filterValues)) {
+              filterValues.forEach(value => {
+                console.log(`  ✅ Clicking filter: ${filterKey} = ${value}`);
+                tableRef.current?.handleFilterChange(filterKey, value);
+              });
+            } else if (filterValues && typeof filterValues === 'string') {
+              // Handle special date formats and regular strings
+              let processedValue = filterValues;
+              if (filterValues.startsWith('<') || filterValues.startsWith('>')) {
+                // For date filters, strip the operator for display
+                processedValue = filterValues.substring(1);
+              }
+              console.log(`  ✅ Setting filter: ${filterKey} = ${processedValue}`);
+              tableRef.current?.handleFilterChange(filterKey, processedValue);
+            }
+          });
+          
+          console.log('✅ STEP 8 COMPLETE: Filter UI updated');
+        }, 100);
+      }
+      
       console.log('✅ STEP 7 COMPLETE: UI updated');
       console.log('🎬 SEARCH FLOW COMPLETED SUCCESSFULLY');
       console.log('=' .repeat(50));
@@ -186,51 +155,12 @@ export function App() {
       console.log('=' .repeat(50));
       
       setSearchError('Failed to process your search. Please try again.');
-      setSearchResult(null);
     } finally {
       setIsSearching(false);
     }
   };
 
-  // Generate accurate summary with real counts
-  const generateAccurateSummary = (query: string, filters: any, resultCount: number, totalCount: number): string => {
-    if (resultCount === totalCount) {
-      return `Showing all ${totalCount} providers`;
-    }
-
-    // Build description based on filters
-    const filterDescriptions: string[] = [];
-    
-    if (filters.specialty?.length) {
-      const specialties = filters.specialty.join(', ');
-      filterDescriptions.push(`${specialties.toLowerCase()}`);
-    }
-    
-    if (filters.attestationStatus?.length) {
-      const statuses = filters.attestationStatus.join(', ').toLowerCase();
-      filterDescriptions.push(`with ${statuses} status`);
-    }
-    
-    if (filters.primaryPracticeState?.length) {
-      const states = filters.primaryPracticeState.join(', ');
-      filterDescriptions.push(`in ${states}`);
-    }
-    
-    if (filters.lastAttestationDate) {
-      if (filters.lastAttestationDate.startsWith('<')) {
-        const date = filters.lastAttestationDate.substring(1);
-        filterDescriptions.push(`who last attested before ${date}`);
-      } else if (filters.lastAttestationDate.startsWith('>')) {
-        const date = filters.lastAttestationDate.substring(1);
-        filterDescriptions.push(`who attested after ${date}`);
-      }
-    }
-
-    let description = filterDescriptions.join(' ');
-    if (!description) {
-      description = 'matching your search';
-    }
-
+  const formatResultCount = (resultCount: number, description: string = '') => {
     const plural = resultCount === 1 ? 'provider' : 'providers';
     return `Found ${resultCount} ${plural} ${description}`;
   };
@@ -241,7 +171,7 @@ export function App() {
     }
   };
   
-  // Also add detailed logging to applyFilters
+  // Apply filters function with detailed logging
   const applyFilters = (data, filters) => {
     console.log('🔧 APPLY FILTERS: Starting filter application');
     console.log('📊 Input data count:', data.length);
@@ -318,134 +248,162 @@ export function App() {
     direction: 'asc'
   });
   
-  return <div className="min-h-screen bg-gray-100">
+  return (
+    <div className="min-h-screen bg-gray-100">
       {/* Top Banner */}
       <header className="w-full bg-white flex items-center px-10 h-16 border-b border-gray-200 sticky top-0 z-50">
         <CAQHLogo className="w-auto h-8 mr-6" />
         <div className="portal-title text-lg font-bold text-blue-900 mr-auto font-['Volte']">
+          Provider Directory Portal
         </div>
-        <div className="flex items-center">
-          <div className="flex items-center gap-6">
-            <Bell className="w-5 h-5 text-gray-600 cursor-pointer hover:text-gray-800" />
-            <HelpCircle className="w-5 h-5 text-gray-600 cursor-pointer hover:text-gray-800" />
-            <Settings className="w-5 h-5 text-gray-600 cursor-pointer hover:text-gray-800" />
-          </div>
+        <div className="flex items-center space-x-4">
+          <Bell className="w-5 h-5 text-gray-600 cursor-pointer" />
+          <HelpCircle className="w-5 h-5 text-gray-600 cursor-pointer" />
+          <Settings className="w-5 h-5 text-gray-600 cursor-pointer" />
         </div>
       </header>
 
-      <main className="container mx-auto py-6 px-4">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="mb-6 flex justify-between items-center">
-            <div>
-              <h2 className="text-2xl font-semibold text-gray-800">
-                Provider Search Results
-              </h2>
-              <p className="text-gray-500">
-                Data refreshed today at {new Date().toLocaleTimeString()}
-              </p>
+      {/* Main Content */}
+      <div className="px-10 py-8">
+        {/* Search Section */}
+        <div className="mb-8">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <img src={sparklesIcon} alt="AI" className="w-6 h-6" />
+              <h1 className="text-2xl font-bold text-gray-900">Ask anything about your providers</h1>
             </div>
-          </div>
-
-          {/* Demo/Help Section */}
-          {showDemo && (
-            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="flex justify-between items-start mb-3">
-                <div className="flex items-center space-x-2">
-                  <Lightbulb className="w-5 h-5 text-blue-600" />
-                  <h3 className="font-semibold text-blue-800">How to Use Provider Search</h3>
-                </div>
-                <button 
-                  onClick={() => setShowDemo(false)}
-                  className="text-blue-600 hover:text-blue-800"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              <p className="text-blue-700 mb-3">
-                Ask any question about providers and get instant results. Try these examples:
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {demoQuestions.map((question, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleDemoClick(question)}
-                    className="text-left p-2 bg-white border border-blue-300 rounded text-blue-700 hover:bg-blue-100 transition-colors"
-                  >
-                    "{question}"
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="mb-4 flex flex-wrap justify-between items-center">
-            <div className="relative flex-1 max-w-3xl mr-4">
-              <div className="flex items-center gap-2">
-                <div className="relative flex-1">
-                  {isSearching ? (
-                    <Loader2 className="absolute left-3 top-2.5 w-5 h-5 text-blue-500 animate-spin" />
-                  ) : (
-                    <img src={sparklesIcon} alt="Search" className="absolute left-3 top-2.5 w-5 h-5" />
-                  )}
-                  <input 
-                    type="text" 
-                    placeholder="Ask any question about providers - press 'Enter' to search!" 
-                    className="w-full pl-10 pr-4 py-2 border-2 border-blue-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all" 
-                    value={searchQuery} 
-                    onChange={e => setSearchQuery(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    disabled={isSearching}
-                  />
-                </div>
-                {!searchQuery && !showDemo && (
-                  <button
-                    onClick={() => setShowDemo(true)}
-                    className="text-xs text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-1 rounded whitespace-nowrap"
-                  >
-                    Show examples
-                  </button>
+            
+            <div className="space-y-4">
+              <div className="relative">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Try: 'Show me cardiologists in California' or 'Which providers need to attest soon?'"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  disabled={isSearching}
+                />
+                {isSearching && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+                  </div>
                 )}
               </div>
-            </div>
-            <div className="flex space-x-4 mb-2 md:mb-0">
-              <ColumnSelector columns={visibleColumns} toggleColumnVisibility={toggleColumnVisibility} />
-              <button onClick={() => setIsSqlModalOpen(true)} className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
-                View SQL
-              </button>
-            </div>
-          </div>
-
-          {/* Error Display */}
-          {searchError && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-700 text-sm">{searchError}</p>
-            </div>
-          )}
-
-          {/* Search Results Summary */}
-          {searchResult?.summary && (
-            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <div className="flex items-start space-x-2">
-                <img src={sparklesIcon} alt="Search result" className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-green-800 font-medium">{searchResult.summary}</p>
-                  {displayData.length !== data.length && (
-                    <p className="text-green-700 text-sm mt-1">
-                      Showing {displayData.length} of {data.length} total providers
-                    </p>
-                  )}
+              
+              <div className="flex justify-between items-center">
+                <button
+                  onClick={() => handleSearch(searchQuery)}
+                  disabled={isSearching || !searchQuery.trim()}
+                  className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                >
+                  {isSearching ? 'Searching...' : 'Search'}
+                </button>
+                
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowDemo(!showDemo)}
+                    className="flex items-center gap-2 text-blue-600 hover:text-blue-700 px-3 py-2 rounded-lg hover:bg-blue-50 transition-colors"
+                  >
+                    <Lightbulb className="w-4 h-4" />
+                    Example questions
+                  </button>
+                  
+                  <button
+                    onClick={() => setIsSqlModalOpen(true)}
+                    className="text-gray-600 hover:text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors text-sm"
+                  >
+                    View SQL
+                  </button>
                 </div>
               </div>
             </div>
-          )}
 
+            {/* Demo Questions */}
+            {showDemo && (
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="flex justify-between items-start mb-3">
+                  <h3 className="font-medium text-blue-900">Try these example questions:</h3>
+                  <button
+                    onClick={() => setShowDemo(false)}
+                    className="text-blue-600 hover:text-blue-800"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {demoQuestions.map((question, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleDemoClick(question)}
+                      className="block w-full text-left p-3 bg-white hover:bg-blue-50 border border-blue-200 rounded-lg text-blue-800 hover:text-blue-900 transition-colors"
+                    >
+                      {question}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Search Error */}
+            {searchError && (
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-800">{searchError}</p>
+              </div>
+            )}
+
+            {/* Search Results Summary */}
+            {searchResult && (
+              <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <img src={sparklesIcon} alt="AI" className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-green-800 font-medium mb-1">Search Results</p>
+                    <p className="text-green-700">{searchResult.summary}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Table Section */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <TableHeader 
+            resultCount={displayData.length}
+            totalCount={data.length}
+            isFiltered={!!searchResult}
+            onClearFilters={() => {
+              setSearchResult(null);
+              setSearchQuery('');
+            }}
+          />
+          
+          <div className="flex justify-end p-4 border-b border-gray-200">
+            <ColumnSelector 
+              columns={columns}
+              onToggleColumn={toggleColumnVisibility}
+            />
+          </div>
+          
           <ProviderTable 
-            data={displayData} 
-            columns={visibleColumns.filter(col => col.isVisible)} 
-            initialSort={null}
+            ref={tableRef}
+            data={displayData}
+            columns={visibleColumns}
+            initialSort={searchResult?.sort}
+            onFiltersChange={(filters) => {
+              // Handle any additional filter change logic if needed
+            }}
           />
         </div>
-      </main>
-      <SqlModal isOpen={isSqlModalOpen} onClose={() => setIsSqlModalOpen(false)} sql={currentSql} />
-    </div>;
+      </div>
+
+      {/* SQL Modal */}
+      <SqlModal 
+        isOpen={isSqlModalOpen}
+        onClose={() => setIsSqlModalOpen(false)}
+        sqlQuery={currentSql}
+      />
+    </div>
+  );
 }

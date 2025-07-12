@@ -1,25 +1,30 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useImperativeHandle, forwardRef } from 'react';
 import { ChevronUpIcon, ChevronDownIcon, CheckIcon } from 'lucide-react';
-export const ProviderTable = ({
+
+export const ProviderTable = forwardRef(({
   data,
   columns,
   initialSort = null,
   onFiltersChange
-}) => {
+}, ref) => {
   const [sortConfig, setSortConfig] = useState(initialSort || {
     key: null,
     direction: 'asc'
   });
+  
   // Update sort config when initialSort changes
   useEffect(() => {
     if (initialSort) {
       setSortConfig(initialSort);
     }
   }, [initialSort]);
+  
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  
   // Initialize filters with empty arrays for multiselect columns
   const [filters, setFilters] = useState({});
+  
   // Move filter initialization to useEffect
   useEffect(() => {
     const initialFilters = {};
@@ -31,6 +36,28 @@ export const ProviderTable = ({
     setFilters(initialFilters);
   }, []); // Empty dependency array since we only want this to run once
   
+  // Handle filter changes
+  const handleFilterChange = (columnId, value) => {
+    if (isMultiselectColumn(columnId)) {
+      setFilters(prev => ({
+        ...prev,
+        [columnId]: prev[columnId]?.includes(value) ?
+          prev[columnId].filter(item => item !== value) :
+          [...(prev[columnId] || []), value]
+      }));
+    } else {
+      setFilters(prev => ({
+        ...prev,
+        [columnId]: value
+      }));
+    }
+  };
+
+  // Expose handleFilterChange via ref
+  useImperativeHandle(ref, () => ({
+    handleFilterChange
+  }));
+  
   // Notify parent component when filters change
   useEffect(() => {
     if (onFiltersChange) {
@@ -39,14 +66,17 @@ export const ProviderTable = ({
   }, [filters, onFiltersChange]);
   
   const [openDropdown, setOpenDropdown] = useState(null);
+  
   // Get unique values for dropdown filters
   const getUniqueValues = columnId => {
     return [...new Set(data.map(item => item[columnId]))].filter(Boolean);
   };
+  
   // Check if column should use multiselect
   const isMultiselectColumn = columnId => {
     return ['attestationStatus', 'specialty', 'primaryPracticeState', 'otherPracticeStates', 'acceptingPatientStatus'].includes(columnId);
   };
+  
   // Apply filters to data
   const filteredData = data.filter(item => {
     return Object.keys(filters).every(key => {
@@ -63,6 +93,7 @@ export const ProviderTable = ({
       return itemValue.includes(filterValue);
     });
   });
+  
   // Apply sorting to filtered data
   const sortedData = useMemo(() => {
     let sortableItems = [...filteredData];
@@ -81,6 +112,7 @@ export const ProviderTable = ({
     }
     return sortableItems;
   }, [filteredData, sortConfig]);
+  
   const requestSort = key => {
     let direction = 'asc';
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -91,6 +123,7 @@ export const ProviderTable = ({
       direction
     });
   };
+  
   // Pagination
   const totalPages = Math.ceil(sortedData.length / rowsPerPage);
   const paginatedData = sortedData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
@@ -251,4 +284,4 @@ export const ProviderTable = ({
         </div>
       </div>
     </div>;
-};
+});
