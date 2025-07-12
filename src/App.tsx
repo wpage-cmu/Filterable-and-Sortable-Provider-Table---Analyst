@@ -31,17 +31,17 @@ export function App() {
   ];
 
   const [columns, setColumns] = useState([
-    { id: 'firstName', header: 'First Name', accessor: 'firstName', width: '140', isVisible: true },
-    { id: 'lastName', header: 'Last Name', accessor: 'lastName', width: '140', isVisible: true },
-    { id: 'npi', header: 'NPI', accessor: 'npi', width: '120', isVisible: true },
-    { id: 'attestationStatus', header: 'Attestation Status', accessor: 'attestationStatus', width: '140', isVisible: true },
-    { id: 'attestationDueDate', header: 'Attestation Due Date', accessor: 'attestationDueDate', width: '140', isVisible: true },
-    { id: 'lastAttestationDate', header: 'Last Attestation Date', accessor: 'lastAttestationDate', width: '140', isVisible: true },
-    { id: 'specialty', header: 'Specialty', accessor: 'specialty', width: '200', isVisible: true },
-    { id: 'acceptingPatientStatus', header: 'Accepting New Patients', accessor: 'acceptingPatientStatus', width: '140', isVisible: true },
-    { id: 'primaryWorkAddress', header: 'Primary Work Address', accessor: 'primaryWorkAddress', width: '250', isVisible: false },
-    { id: 'primaryPracticeState', header: 'Primary Practice State', accessor: 'primaryPracticeState', width: '140', isVisible: true },
-    { id: 'otherPracticeStates', header: 'Other Practice States', accessor: 'otherPracticeStates', width: '160', isVisible: false }
+    { id: 'firstName', Header: 'First Name', accessor: 'firstName', width: '140', isVisible: true },
+    { id: 'lastName', Header: 'Last Name', accessor: 'lastName', width: '140', isVisible: true },
+    { id: 'npi', Header: 'NPI', accessor: 'npi', width: '120', isVisible: true },
+    { id: 'attestationStatus', Header: 'Attestation Status', accessor: 'attestationStatus', width: '140', isVisible: true },
+    { id: 'attestationDueDate', Header: 'Attestation Due Date', accessor: 'attestationDueDate', width: '140', isVisible: true },
+    { id: 'lastAttestationDate', Header: 'Last Attestation Date', accessor: 'lastAttestationDate', width: '140', isVisible: true },
+    { id: 'specialty', Header: 'Specialty', accessor: 'specialty', width: '200', isVisible: true },
+    { id: 'acceptingPatientStatus', Header: 'Accepting New Patients', accessor: 'acceptingPatientStatus', width: '140', isVisible: true },
+    { id: 'primaryWorkAddress', Header: 'Primary Work Address', accessor: 'primaryWorkAddress', width: '250', isVisible: false },
+    { id: 'primaryPracticeState', Header: 'Primary Practice State', accessor: 'primaryPracticeState', width: '140', isVisible: true },
+    { id: 'otherPracticeStates', Header: 'Other Practice States', accessor: 'otherPracticeStates', width: '160', isVisible: false }
   ]);
 
   const visibleColumns = columns.filter(column => column.isVisible);
@@ -253,10 +253,16 @@ export function App() {
   };
   
   const displayData = searchResult?.filteredData || data;
-  const currentSql = generateSql(searchQuery, searchResult?.filters || {}, {
-    key: null,
-    direction: 'asc'
-  });
+  
+  // Track current table filters for SQL generation
+  const [currentTableFilters, setCurrentTableFilters] = useState({});
+  const [currentTableSort, setCurrentTableSort] = useState({ key: null, direction: 'asc' });
+  
+  // Generate SQL that updates with current state
+  const currentSql = generateSql(searchQuery, {
+    ...searchResult?.filters,
+    ...currentTableFilters
+  }, currentTableSort);
   
   return (
     <div className="min-h-screen bg-gray-100">
@@ -312,20 +318,12 @@ export function App() {
                 
                 <div className="flex items-center gap-4">
                   <button
-                    onClick={() => setIsSqlModalOpen(true)}
-                    className="text-gray-600 hover:text-gray-900 text-sm flex items-center gap-1"
+                    onClick={() => setShowDemo(!showDemo)}
+                    className="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1"
                   >
-                    <span>SQL</span>
+                    <Lightbulb className="w-4 h-4" />
+                    <span>Try examples</span>
                   </button>
-                  
-                  <div className="relative">
-                    <button
-                      onClick={() => setShowDemo(!showDemo)}
-                      className="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1"
-                    >
-                      <Lightbulb className="w-4 h-4" />
-                      <span>Try examples</span>
-                    </button>
                     
                     {showDemo && (
                       <div className="absolute top-full right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
@@ -392,14 +390,10 @@ export function App() {
                 tableRef.current.clearAllFilters();
               }
             }}
+            columns={columns}
+            onToggleColumn={toggleColumnVisibility}
+            onOpenSqlModal={() => setIsSqlModalOpen(true)}
           />
-          
-          <div className="flex justify-end p-4 border-b border-gray-200">
-            <ColumnSelector 
-              columns={columns}
-              onToggleColumn={toggleColumnVisibility}
-            />
-          </div>
           
           <ProviderTable 
             ref={tableRef}
@@ -407,7 +401,10 @@ export function App() {
             columns={visibleColumns}
             initialSort={searchResult?.sort}
             onFiltersChange={(filters) => {
-              // Handle any additional filter change logic if needed
+              setCurrentTableFilters(filters);
+            }}
+            onSortChange={(sortConfig) => {
+              setCurrentTableSort(sortConfig);
             }}
           />
         </div>

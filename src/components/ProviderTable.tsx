@@ -5,7 +5,8 @@ export const ProviderTable = forwardRef(({
   data,
   columns,
   initialSort = null,
-  onFiltersChange
+  onFiltersChange,
+  onSortChange
 }, ref) => {
   const [sortConfig, setSortConfig] = useState(initialSort || {
     key: null,
@@ -137,10 +138,16 @@ export const ProviderTable = forwardRef(({
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
       direction = 'desc';
     }
-    setSortConfig({
+    const newSortConfig = {
       key,
       direction
-    });
+    };
+    setSortConfig(newSortConfig);
+    
+    // Notify parent of sort changes
+    if (onSortChange) {
+      onSortChange(newSortConfig);
+    }
   };
   
   // Pagination
